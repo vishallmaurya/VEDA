@@ -12,6 +12,10 @@ numerical_column = [col for col in df.columns if col not in categorical_column]
 print(f"Numerical columns name: {numerical_column}")
 print(f"Categorical columns name: {categorical_column}")
 
+print(df.shape) 
+df2 = df.dropna()
+print(df2.shape)
+
 # print(df1.dtypes)
 
 
