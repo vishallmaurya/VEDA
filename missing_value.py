@@ -1,5 +1,7 @@
 import pandas as pd
 import numpy as np
+from sklearn.impute import SimpleImputer
+from sklearn.compose import ColumnTransformer
 
 # CCA--> Complete case Analysis
 
@@ -10,20 +12,19 @@ import numpy as np
    
    2.1 If total dropped data is less than 10% then its fine else don't
    drop the rows return original data.
-
 """
 
 
-def drop_row_column(df, datalosspercent = 10):
+def drop_row_column(df, datalosspercent = 10, limit = 0.04):
     null_count = df.isnull().sum().values.sum()
     if null_count == 0: # if data is completely clean
         return df
     else:
-        limited_null_columns = [var for var in df.columns if df[var].isnull().mean() <= 0.04]
-        excessive_null_columns = [var for var in df.columns if df[var].isnull().mean() > 0.04]
+        limited_null_columns = [var for var in df.columns if df[var].isnull().mean() <= limit]
+        excessive_null_columns = [var for var in df.columns if df[var].isnull().mean() > limit]
 
         if len(limited_null_columns) == 0:
-            return df       # there exists columns that have null values more than 4%, then it's not feasible to do cca
+            return df       
         else:
             new_df = df[limited_null_columns].dropna()
             new_df[excessive_null_columns] = df[excessive_null_columns]
@@ -36,7 +37,23 @@ def drop_row_column(df, datalosspercent = 10):
             else:
                 return new_df
             
+def impute_row_column(df, limit = 0.04):
+    null_count = df.isnull().sum().values.sum()
+    if null_count == 0: # if data is completely clean
+        return df
+    else:
+        limited_null_columns = [var for var in df.columns if df[var].isnull().mean() <= limit]
+        excessive_null_columns = [var for var in df.columns if df[var].isnull().mean() > limit]
+        
+        if len(limited_null_columns) == 0:
+            return df
+        else:
+            # checking for categorical column
+            categorical_column = list(limited_null_columns[df.dtypes == 'object'])
+            numerical_column = [col for col in limited_null_columns if col not in categorical_column]
 
+            imputer1 = SimpleImputer(strategy='median')
+imputer2 = SimpleImputer(strategy='mean')
 def callingfunc():
     df = pd.read_csv('data\data_science_job.csv')
     print(df.shape)
