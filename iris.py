@@ -6,8 +6,13 @@ df = pd.read_csv('data\dirty_iris.csv')
 # print(df.describe())
 df1 = pd.read_csv('temp_file.csv')
 
-print(len(df.columns[df.dtypes == 'object']))
-print(df1.dtypes)
+categorical_column = list(df.columns[df.dtypes == 'object'])
+numerical_column = [col for col in df.columns if col not in categorical_column]
+
+print(f"Numerical columns name: {numerical_column}")
+print(f"Categorical columns name: {categorical_column}")
+
+# print(df1.dtypes)
 
 
 # print(df[df.duplicated()])
