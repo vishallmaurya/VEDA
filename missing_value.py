@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from sklearn.impute import SimpleImputer
+from sklearn.impute import SimpleImputer, KNNImputer
 from sklearn.compose import ColumnTransformer
 
 # CCA--> Complete case Analysis
@@ -35,7 +35,19 @@ def drop_row_column(df, datalosspercent = 10, limit = 0.04):
                 return df
             else:
                 return new_df
-            
+
+# Univariate Imputation 
+
+"""
+ parameters :
+    df: pandas dataframe accepted as data
+    limit: upper limit of data that can be null, so that can be processed (range should 0 to 1)
+    var_diff: after imputation the upper limit to which the variance of the column may change ( range sould 0 to 1)
+    mod_diff: after imputation the upper limit to which the mode of the column may change (range should be 0 to 1)
+ purpose: 
+    univariate imputation on numerical column and categorical column
+"""
+
 def impute_row_column(df, limit = 0.04, var_diff = 0.05, mod_diff = 0.05):
     null_count = df.isnull().sum().values.sum()
     if null_count == 0: # if data is completely clean
@@ -70,7 +82,7 @@ def impute_row_column(df, limit = 0.04, var_diff = 0.05, mod_diff = 0.05):
 
             new_data = df # temporary data
             variation_before_imputation = df[numerical_column].var()
-            print(df[numerical_column].cov())
+            
             median = trf1.fit_transform(new_data[numerical_column])
             mean = trf2.fit_transform(new_data[numerical_column])
             mode = trf4.fit_transform(new_data[categorical_column])
@@ -95,13 +107,21 @@ def impute_row_column(df, limit = 0.04, var_diff = 0.05, mod_diff = 0.05):
 
             return new_data
 
+
+# multivariate knn Imputer
+
+def multivariate_impute(df, n_neighbors = 5):
+    knn = KNNImputer()
+    new_data = df
+    new_data[df.columns] = knn.fit_transform(df)
+    return new_data
+
 def callingfunc():
-    df = pd.read_csv('data\\train.csv',usecols=['GarageQual'])
-    print("Before :  ", df['GarageQual'].value_counts().iloc[1]/df['GarageQual'].value_counts().iloc[0])
+    df = pd.read_csv('data\\titanic_toy.csv')
+    print(df['Fare'].isnull().sum())
+    df = multivariate_impute(df.drop(['Survived'], axis=1))
+    print(df['Fare'].isnull().sum())
     
-    df = impute_row_column(df, limit=0.06, var_diff=0.05, mod_diff=0.06)
-    print("After :  ", df['GarageQual'].value_counts().iloc[1]/df['GarageQual'].value_counts().iloc[0])
-
-
+    
     
 callingfunc()
