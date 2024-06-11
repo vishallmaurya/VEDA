@@ -117,11 +117,6 @@ def multivariate_impute(df, n_neighbors = 5):
     return new_data
 
 def callingfunc():
-    df = pd.read_csv('data\\titanic_toy.csv')
-    print(df['Fare'].isnull().sum())
-    df = multivariate_impute(df.drop(['Survived'], axis=1))
-    print(df['Fare'].isnull().sum())
-    
-    
+    pass
     
 callingfunc()
