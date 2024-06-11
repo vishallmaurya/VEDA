@@ -36,11 +36,12 @@ def drop_row_column(df, datalosspercent = 10, limit = 0.04):
             else:
                 return new_df
             
-def impute_row_column(df, limit = 0.04):
+def impute_row_column(df, limit = 0.04, var_diff = 0.05, mod_diff = 0.05):
     null_count = df.isnull().sum().values.sum()
     if null_count == 0: # if data is completely clean
         return df
     else:
+        # columns that have less than given null values limit
         limited_null_columns = [var for var in df.columns if df[var].isnull().mean() <= limit]
         excessive_null_columns = [var for var in df.columns if df[var].isnull().mean() > limit]
         
@@ -48,35 +49,59 @@ def impute_row_column(df, limit = 0.04):
             return df
         else:
             # checking for categorical column
-            
-            categorical_column = [col for col in df.columns if col in limited_null_columns and df[col].dtype == 'object']
-            numerical_column = [col for col in limited_null_columns if col not in categorical_column]
+            categorical_column = [col for col in df.columns if col in limited_null_columns and (df[col].dtype == 'object' or df[col].dtype == 'category')]
+            numerical_column = [col for col in df.columns if col in limited_null_columns and (df[col].dtype == 'int64' or df[col].dtype == 'float64' or df[col].dtype == 'float32')]
             
             imputer1 = SimpleImputer(strategy='median')
             imputer2 = SimpleImputer(strategy='mean')
-            imputer3 = SimpleImputer(strategy='constant',fill_value='Missing')
             imputer4 = SimpleImputer(strategy='most_frequent')
 
-            trf = ColumnTransformer([
-                ('imputer1',imputer1,numerical_column),
-                # ('imputer2',imputer2,numerical_column)
+            trf1 = ColumnTransformer([
+                ('imputer1',imputer1,numerical_column)
             ],remainder='passthrough')
+            
+            trf2 = ColumnTransformer([
+                ('imputer2', imputer2, numerical_column)
+            ], remainder='passthrough')
 
-            new_data = df
+            trf4 = ColumnTransformer([
+                ('imputer4', imputer4, categorical_column)
+            ], remainder='passthrough')
 
-            new_data[numerical_column] = trf.fit_transform(df[numerical_column])
-            # print(new_data)
-            # new_data = pd.DataFrame(new_data[:, 0], columns=numerical_column)
-            # return new_data
+            new_data = df # temporary data
+            variation_before_imputation = df[numerical_column].var()
+            print(df[numerical_column].cov())
+            median = trf1.fit_transform(new_data[numerical_column])
+            mean = trf2.fit_transform(new_data[numerical_column])
+            mode = trf4.fit_transform(new_data[categorical_column])
+
+            for i in range(len(numerical_column)):
+                percentage_change_median = ((variation_before_imputation.iloc[i]-median[:, i].var())/variation_before_imputation.iloc[i])
+                percentage_change_mean = ((variation_before_imputation.iloc[i]-mean[:, i].var())/variation_before_imputation.iloc[i])
+                
+                if (percentage_change_median > percentage_change_mean) and (percentage_change_mean < var_diff):
+                    new_data[numerical_column[i]] = mean[:, i]
+                elif percentage_change_median < var_diff:
+                    new_data[numerical_column[i]] = median[:, i]
+                else:
+                    new_data[numerical_column[i]] = df[numerical_column[i]]
+
+            for i in range(len(categorical_column)):
+                values = df[categorical_column[i]].value_counts().sort_values(ascending=False)
+                if values.iloc[1]/values.iloc[0] > mod_diff:
+                    continue
+                else:
+                    new_data[categorical_column[i]] = mode[:, i]
+
             return new_data
 
 def callingfunc():
-    # df = pd.read_csv('data\data_science_job.csv')
-    df = pd.read_csv('data\\titanic_toy.csv')
-    # print(df.shape)
-    # df = drop_row_column(df)
-    # df.info()
-    print(df.loc[df['Age'] == 22])
-    df = impute_row_column(df.drop(['Survived', 'Family'], axis = 1), limit=0.06)
-    print(df.loc[df['Age'] == 22])
+    df = pd.read_csv('data\\train.csv',usecols=['GarageQual'])
+    print("Before :  ", df['GarageQual'].value_counts().iloc[1]/df['GarageQual'].value_counts().iloc[0])
+    
+    df = impute_row_column(df, limit=0.06, var_diff=0.05, mod_diff=0.06)
+    print("After :  ", df['GarageQual'].value_counts().iloc[1]/df['GarageQual'].value_counts().iloc[0])
+
+
+    
 callingfunc()
