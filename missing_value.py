@@ -2,6 +2,20 @@ import pandas as pd
 import numpy as np
 from sklearn.impute import SimpleImputer, KNNImputer
 from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import OneHotEncoder, LabelEncoder
+
+
+
+"""
+    parameter:
+        df: pandas dataframe
+"""
+
+def delete_duplicates(df, keep = 'first'):
+    if isinstance(df, pd.DataFrame):
+        return df.drop_duplicates(keep)
+    raise ValueError(f"Invalid datatype {type(df)} this function accept pandas dataframe")
+
 
 # CCA--> Complete case Analysis
 
@@ -16,6 +30,9 @@ from sklearn.compose import ColumnTransformer
 
 
 def drop_row_column(df, datalosspercent = 10, limit = 0.04):
+    if isinstance(df, pd.DataFrame) == False:
+        raise ValueError(f"Invalid datatype {type(df)} this function accept pandas dataframe")
+
     null_count = df.isnull().sum().values.sum()
     if null_count == 0: # if data is completely clean
         return df
@@ -49,11 +66,13 @@ def drop_row_column(df, datalosspercent = 10, limit = 0.04):
 """
 
 def impute_row_column(df, limit = 0.04, var_diff = 0.05, mod_diff = 0.05, numerical_column = [], categorical_column = [], temporal_column = [], temporal_type = 'interpolate'):
-    
+
     """
         error handling
     """
-    
+    if isinstance(df, pd.DataFrame) == False:
+        raise ValueError(f"Invalid datatype {type(df)} this function accept pandas dataframe")
+
     if(limit > 1 or limit < 0):
         raise ValueError("Invalid value. Value of limit should be from 0 to 1 inclusive.")
     if(var_diff > 1 or var_diff < 0):
@@ -157,13 +176,53 @@ def impute_row_column(df, limit = 0.04, var_diff = 0.05, mod_diff = 0.05, numeri
 
 # multivariate knn Imputer
 
+"""
+ parameters :
+    df: pandas dataframe accepted as data
+    n_neighbors: number of neighbors for imputing data
+ purpose: 
+    multivariate imputation on numerical column and categorical column
+"""
+
+
+
 def multivariate_impute(df, n_neighbors = 5):
+    if isinstance(df, pd.DataFrame) == False:
+        raise ValueError(f"Invalid datatype {type(df)} this function accept pandas dataframe")
     knn = KNNImputer()
     new_data = df
     new_data[df.columns] = knn.fit_transform(df)
     return new_data
 
+# categorical label encoder
+
+"""
+ parameters :
+    df: pandas dataframe accepted as data
+    type: parameter to decide that which type of encoding is used (default value is onehot)
+    columns: which columns of dataframe should be encoded
+    sparse: to decide sparsity of data
+"""
+
+
+def one_hot_labelencoder(df, type = 'onehot', columns = [], sparse = False):
+    if isinstance(df, pd.DataFrame) == False:
+        raise ValueError(f"Invalid datatype {type(df)} this function accept pandas dataframe")
+
+    if len(columns) == 0:
+            raise ValueError("length of columns can't be zero")    
+    if type == 'onehot':
+        onehotencoder = OneHotEncoder(sparse=False)
+        df[columns] = onehotencoder.fit_transform(df[columns])
+    elif type == 'labelencode':
+        labelencoder = LabelEncoder()
+        df[columns] = labelencoder.fit_transform(df[columns])
+    else:
+        raise ValueError("Invalid parameter did you mean 'onehot' or 'labelencode'?")
+
+
 def callingfunc():
-    pass
+    df = pd.read_csv('data\data_science_job.csv')
+    print(isinstance(df, pd.DataFrame))
     
 callingfunc()
