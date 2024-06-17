@@ -5,7 +5,6 @@ from sklearn.ensemble import IsolationForest
 from sklearn.neighbors import LocalOutlierFactor
 from sklearn.cluster import DBSCAN
 
-
 def is_normal_distribution(data, minlen = 5000, tests = ['skew-kurtosis']):
     # Convert data to pandas Series if it's not already
     if not isinstance(data, pd.Series):
@@ -118,11 +117,48 @@ def handle_outliers(data, get_outliers = False, tests = ['skew-kurtosis'], metho
         error handling finishes here
     """
 
+    if method == 'isolation-forest':
+        iso_forest = IsolationForest()
+        outlier = iso_forest.fit_predict(data)
+        data_cleaned = data[outlier != -1]
 
-    iso_forest = IsolationForest()
-    outliers = iso_forest.fit_predict(data)
-    data_cleaned = data[outliers != -1]
+        if get_outliers == True:
+            outliers = data[outlier == -1]
+            return outliers, data_cleaned
+        else:
+            return data_cleaned
     
+    if method == 'lof':
+        lof = LocalOutlierFactor()
+        outlier = lof.fit_predict(data)
+        data_cleaned = data[outlier != -1]
+
+        if get_outliers == True:
+            outliers = data[outlier == -1]
+            return outliers, data_cleaned
+        else:
+            return data_cleaned
+    
+    if method == 'dbscan':
+        dbscan = DBSCAN()
+        outlier = dbscan.fit_predict(data)
+        data_cleaned = data[outlier != -1]
+
+        if get_outliers == True:
+            outliers = data[outlier == -1]
+            return outliers, data_cleaned
+        else:
+            return data_cleaned
+    
+    if method == 'z-score':
+        mean = data.mean()
+        std = data.std()
+
+        pos_limit = mean + 3*std
+        neg_limit = mean - 3*std
+
+        outliers = data[(data > pos_limit) | (data < neg_limit)]
+        
 
 
 # data = pd.read_csv('data\placement.csv')
