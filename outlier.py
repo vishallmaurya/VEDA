@@ -1,6 +1,10 @@
 import pandas as pd
 import numpy as np
 from scipy.stats import shapiro, kstest, anderson, jarque_bera, skew, kurtosis
+from sklearn.ensemble import IsolationForest
+from sklearn.neighbors import LocalOutlierFactor
+from sklearn.cluster import DBSCAN
+
 
 def is_normal_distribution(data, minlen = 5000, tests = ['skew-kurtosis']):
     # Convert data to pandas Series if it's not already
@@ -54,8 +58,73 @@ def is_normal_distribution(data, minlen = 5000, tests = ['skew-kurtosis']):
     
     return True
 
-# Example usage:
+def get_outliermethod_params(methodname):
+    if not isinstance(methodname, str):
+        raise ValueError("The methodname should be a string")
 
-data = pd.read_csv('data\placement.csv')
-result = is_normal_distribution(data['placement_exam_marks'], tests=['jarque-bera'])
-print(f"Is the data normally distributed? {result}")
+    method_list = ['isolation-forest', 'lof', 'dbscan', 'z-score', 'iqr']
+
+    if methodname not in method_list:
+        raise ValueError(f"There is no method defined in the library of name {methodname}")
+    
+    if methodname == 'isolation-forest':
+        iso_forest = IsolationForest()
+        return iso_forest.get_params()
+    elif methodname == 'lof':
+        lof = LocalOutlierFactor()
+        return lof.get_params()
+    elif methodname == 'dbscan':
+        dbscan = DBSCAN()
+        return dbscan.get_params()
+    elif methodname == 'z-score':
+        return None
+    elif methodname == 'iqr':
+        return None
+
+def handle_outliers(data, get_outliers = False, tests = ['skew-kurtosis'], method = 'iqr', handle = "capping"):
+    
+    """
+        error handling
+    """
+    
+    if not isinstance(data, pd.Series):
+        data = pd.Series(data)
+    
+    if not isinstance(tests, list):
+        raise ValueError("tests should should be an list of string")
+    
+    if not isinstance(method, str):
+        raise ValueError("The method should be a string")
+
+    if not isinstance(handle, str):
+        raise ValueError("The handle should be a string")
+
+    if handle != 'capping' || handle != 'trimming':
+        raise ValueError("Possible value for the parameter handle is 'capping' or 'timming'")
+    
+    test_list = ['skew-kurtosis', 'shapiro', 'kstest', 'anderson', 'jarque-bera']
+
+    for t in tests:
+        if t not in test_list:
+            raise ValueError(f"Invalid test. did you want to write {test_list}")
+
+    method_list = ['isolation-forest', 'lof', 'dbscan', 'z-score', 'iqr']
+
+    if method not in method_list:
+        raise ValueError(f"Invalid test. did you want to write {method_list}")
+
+
+    """
+        error handling finishes here
+    """
+
+
+    iso_forest = IsolationForest()
+    outliers = iso_forest.fit_predict(data)
+    data_cleaned = data[outliers != -1]
+    
+
+
+# data = pd.read_csv('data\placement.csv')
+# result = is_normal_distribution(data['placement_exam_marks'], tests=['jarque-bera'])
+# print(f"Is the data normally distributed? {result}")
