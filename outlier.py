@@ -98,8 +98,10 @@ def handle_outliers(data, get_outliers = False, tests = ['skew-kurtosis'], metho
     if not isinstance(handle, str):
         raise ValueError("The handle should be a string")
 
-    if handle != 'capping' || handle != 'trimming':
-        raise ValueError("Possible value for the parameter handle is 'capping' or 'timming'")
+    handle_list = ['capping', 'trimming', 'winsorization']
+
+    if handle not in handle_list:
+        raise ValueError("Possible value for the parameter handle is 'capping' ,'timming' or 'winsorization'")
     
     test_list = ['skew-kurtosis', 'shapiro', 'kstest', 'anderson', 'jarque-bera']
 
@@ -117,17 +119,17 @@ def handle_outliers(data, get_outliers = False, tests = ['skew-kurtosis'], metho
         error handling finishes here
     """
 
+    outliers = []
+
     if method == 'isolation-forest':
         iso_forest = IsolationForest()
         outlier = iso_forest.fit_predict(data)
         data_cleaned = data[outlier != -1]
+        outliers = data[outlier == -1]
+        
 
-        if get_outliers == True:
-            outliers = data[outlier == -1]
-            return outliers, data_cleaned
-        else:
-            return data_cleaned
-    
+    if handle == 'capping':
+        
     if method == 'lof':
         lof = LocalOutlierFactor()
         outlier = lof.fit_predict(data)
@@ -154,13 +156,31 @@ def handle_outliers(data, get_outliers = False, tests = ['skew-kurtosis'], metho
         mean = data.mean()
         std = data.std()
 
-        pos_limit = mean + 3*std
-        neg_limit = mean - 3*std
+        upper_limit = mean + 3*std
+        lower_limit = mean - 3*std
 
-        outliers = data[(data > pos_limit) | (data < neg_limit)]
+        outliers = data[(data > upper_limit) | (data < lower_limit)]
         
+        if get_outliers == True:
+            return outliers, data_cleaned
+        else:
+            return data_cleaned
+    
+    if method == 'iqr':
+        q25 = data.quantile(0.25)
+        q75 = data.quantile(0.75)
 
+        iqr = q75 - q25
 
+        upper_limit = q75 + 1.5 * iqr
+        lower_limit = q25 - 1.5 * iqr
+        
+        outliers = data[(data > upper_limit) | (data < lower_limit)]
+
+        if get_outliers == True:
+            return outliers, data_cleaned
+        else:
+            return data_cleaned
 # data = pd.read_csv('data\placement.csv')
 # result = is_normal_distribution(data['placement_exam_marks'], tests=['jarque-bera'])
 # print(f"Is the data normally distributed? {result}")
