@@ -80,14 +80,14 @@ def get_outliermethod_params(methodname):
     elif methodname == 'iqr':
         return None
 
-def handle_outliers(data, get_outliers = False, tests = ['skew-kurtosis'], method = 'iqr', handle = "capping"):
+def handle_outliers(data, get_outliers = False, tests = ['skew-kurtosis'], method = 'iqr', handle = "capping", lower_percentile = 0.03, upper_percentile = 0.97):
     
     """
         error handling
     """
     
-    if not isinstance(data, pd.Series):
-        data = pd.Series(data)
+    if not isinstance(data, pd.DataFrame):
+        data = data.to_frame()
     
     if not isinstance(tests, list):
         raise ValueError("tests should should be an list of string")
@@ -124,63 +124,78 @@ def handle_outliers(data, get_outliers = False, tests = ['skew-kurtosis'], metho
     if method == 'isolation-forest':
         iso_forest = IsolationForest()
         outlier = iso_forest.fit_predict(data)
-        data_cleaned = data[outlier != -1]
         outliers = data[outlier == -1]
-        
 
-    if handle == 'capping':
-        
-    if method == 'lof':
-        lof = LocalOutlierFactor()
-        outlier = lof.fit_predict(data)
-        data_cleaned = data[outlier != -1]
+    if handle == 'capping' or handle == 'winsorization':
+        new_data_cap = data.copy()
 
-        if get_outliers == True:
-            outliers = data[outlier == -1]
-            return outliers, data_cleaned
-        else:
-            return data_cleaned
+        lower_limit = data.quantile(lower_percentile)
+        upper_limit = data.quantile(upper_percentile)
+
+        new_data_cap = np.where(
+            new_data_cap > upper_limit,
+            upper_limit,
+            np.where(
+                new_data_cap < lower_limit,
+                lower_limit,
+                new_data_cap
+            )
+        )
+        
+    # if method == 'lof':
+    #     lof = LocalOutlierFactor()
+    #     outlier = lof.fit_predict(data)
+    #     data_cleaned = data[outlier != -1]
+
+    #     if get_outliers == True:
+    #         outliers = data[outlier == -1]
+    #         return outliers, data_cleaned
+    #     else:
+    #         return data_cleaned
     
-    if method == 'dbscan':
-        dbscan = DBSCAN()
-        outlier = dbscan.fit_predict(data)
-        data_cleaned = data[outlier != -1]
+    # if method == 'dbscan':
+    #     dbscan = DBSCAN()
+    #     outlier = dbscan.fit_predict(data)
+    #     data_cleaned = data[outlier != -1]
 
-        if get_outliers == True:
-            outliers = data[outlier == -1]
-            return outliers, data_cleaned
-        else:
-            return data_cleaned
+    #     if get_outliers == True:
+    #         outliers = data[outlier == -1]
+    #         return outliers, data_cleaned
+    #     else:
+    #         return data_cleaned
     
-    if method == 'z-score':
-        mean = data.mean()
-        std = data.std()
+    # if method == 'z-score':
+    #     mean = data.mean()
+    #     std = data.std()
 
-        upper_limit = mean + 3*std
-        lower_limit = mean - 3*std
+    #     upper_limit = mean + 3*std
+    #     lower_limit = mean - 3*std
 
-        outliers = data[(data > upper_limit) | (data < lower_limit)]
+    #     outliers = data[(data > upper_limit) | (data < lower_limit)]
         
-        if get_outliers == True:
-            return outliers, data_cleaned
-        else:
-            return data_cleaned
+    #     if get_outliers == True:
+    #         return outliers, data_cleaned
+    #     else:
+    #         return data_cleaned
     
-    if method == 'iqr':
-        q25 = data.quantile(0.25)
-        q75 = data.quantile(0.75)
+    # if method == 'iqr':
+    #     q25 = data.quantile(0.25)
+    #     q75 = data.quantile(0.75)
 
-        iqr = q75 - q25
+    #     iqr = q75 - q25
 
-        upper_limit = q75 + 1.5 * iqr
-        lower_limit = q25 - 1.5 * iqr
+    #     upper_limit = q75 + 1.5 * iqr
+    #     lower_limit = q25 - 1.5 * iqr
         
-        outliers = data[(data > upper_limit) | (data < lower_limit)]
+    #     outliers = data[(data > upper_limit) | (data < lower_limit)]
 
-        if get_outliers == True:
-            return outliers, data_cleaned
-        else:
-            return data_cleaned
-# data = pd.read_csv('data\placement.csv')
-# result = is_normal_distribution(data['placement_exam_marks'], tests=['jarque-bera'])
-# print(f"Is the data normally distributed? {result}")
+    #     if get_outliers == True:
+    #         return outliers, data_cleaned
+    #     else:
+    #         return data_cleaned
+
+
+data = pd.read_csv('data\placement.csv')
+print(data.shape)
+cleaned = handle_outliers(data['cgpa'], method = 'isolation-forest')
+print(cleaned.shape)
