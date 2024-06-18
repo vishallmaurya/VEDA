@@ -2,8 +2,10 @@ import pandas as pd
 import numpy as np
 from scipy.stats import shapiro, kstest, anderson, jarque_bera, skew, kurtosis
 from sklearn.ensemble import IsolationForest
-from sklearn.neighbors import LocalOutlierFactor
+from sklearn.neighbors import LocalOutlierFactor, NearestNeighbors
 from sklearn.cluster import DBSCAN
+from math import sqrt
+from diptest import diptest
 
 def is_normal_distribution(data, minlen = 5000, tests = ['skew-kurtosis']):
     # Convert data to pandas Series if it's not already
@@ -80,7 +82,8 @@ def get_outliermethod_params(methodname):
     elif methodname == 'iqr':
         return None
 
-def handle_outliers(data, get_outliers = False, tests = ['skew-kurtosis'], method = 'iqr', handle = "capping", lower_percentile = 0.03, upper_percentile = 0.97):
+
+def handle_outliers(data, get_outliers = False, tests = ['skew-kurtosis'], method = 'default', handle = "capping", lower_percentile = 0.03, upper_percentile = 0.97):
     
     """
         error handling
@@ -119,33 +122,36 @@ def handle_outliers(data, get_outliers = False, tests = ['skew-kurtosis'], metho
         error handling finishes here
     """
 
-    outliers = []
-
-    if method == 'isolation-forest':
-        iso_forest = IsolationForest()
+    if (method='default' and len(data) >= 10000) or (method == 'isolation-forest') :
+        iso_forest = IsolationForest(contamination=0.03, n_estimators=200, max_samples=sqrt(len(data)))
         outlier = iso_forest.fit_predict(data)
         outliers = data[outlier == -1]
+        cleaned_data = data[outlier != -1]
+        return outliers, cleaned_data
 
-    if handle == 'capping' or handle == 'winsorization':
-        new_data_cap = data.copy()
+    if method == 'default':
+        k = 20
+        variance_threshold = 0.05
+        dip_p_value_threshold = 0.05
 
-        lower_limit = data.quantile(lower_percentile)
-        upper_limit = data.quantile(upper_percentile)
 
-        new_data_cap = np.where(
-            new_data_cap > upper_limit,
-            upper_limit,
-            np.where(
-                new_data_cap < lower_limit,
-                lower_limit,
-                new_data_cap
-            )
-        )
-        
-    # if method == 'lof':
-    #     lof = LocalOutlierFactor()
-    #     outlier = lof.fit_predict(data)
-    #     data_cleaned = data[outlier != -1]
+        nbrs = NearestNeighbors(n_neighbors=k).fit(data)
+        distances, _ = nbrs.kneighbors(data)
+        distances = distances[:, k-1]
+
+        dist_variance = np.var(distances)
+        dist_std = np.std(distances)
+
+        dip, dip_p_value = diptest(distances)
+
+        use_lof = (dist_variance > variance_threshold) and (dip_p_value < dip_p_value_threshold)
+
+    if use_lof or method == 'lof':
+        lof = LocalOutlierFactor(n_neighbors=k)
+        y_pred = lof.fit_predict(X)
+        outliers = data[y_pred == -1]
+        cleaned_data = data[y_pred != -1]
+        return outliers, cleaned_data
 
     #     if get_outliers == True:
     #         outliers = data[outlier == -1]
