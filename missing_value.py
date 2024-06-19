@@ -79,19 +79,13 @@ def impute_row_column(df, limit = 0.04, var_diff = 0.05, mod_diff = 0.05, numeri
         raise ValueError("Invalid value. Value of var_diff should be from 0 to 1 inclusive.")
     if(mod_diff > 1 or mod_diff < 0):
         raise ValueError("Invalid value. Value of mod_diff should be from 0 to 1 inclusive.")
+    
     dtype_list = ['object', 'category', 'string', 'interval', 'bool', 'int64', 'int32', 'int16', 'int8', 'uint64', 'uint32', 'uint16', 'uint8', 'float64', 'float32', 'datetime64[ns]', 'timedelta64[ns]', 'datetime64[ns, tz]', 'period']
     
-    for nc in numerical_column:
-        if nc not in dtype_list:
+    for i in df.columns:
+        if df[i].dtype not in dtype_list:
             raise ValueError(f"Invalid dtype, this module can work with only {dtype_list} dtypes")
-    
-    for nc in categorical_column:
-        if nc not in dtype_list:
-            raise ValueError(f"Invalid dtype, this module can work with only {dtype_list} dtypes")
-    
-    for nc in temporal_column:
-        if nc not in dtype_list:
-            raise ValueError(f"Invalid dtype, this module can work with only {dtype_list} dtypes")
+
 
     null_count = df.isnull().sum().values.sum()
     if null_count == 0: # if data is completely clean
