@@ -107,7 +107,6 @@ def get_outliermethod_params(methodname):
         return None
 
 
-
 """
     parameters:
         data: data should be of pandas dataframe object and should consist of numerical data only, if not get converted into series object.
@@ -154,7 +153,7 @@ def handle_outliers(data, tests = ['skew-kurtosis'], method = 'default', handle 
         if t not in test_list:
             raise ValueError(f"Invalid test. did you want to write {test_list}")
 
-    method_list = ['isolation-forest', 'lof', 'z-score', 'iqr']
+    method_list = ['isolation-forest', 'lof', 'default']
 
     if method not in method_list:
         raise ValueError(f"Invalid test. did you want to write {method_list}")
@@ -192,36 +191,34 @@ def handle_outliers(data, tests = ['skew-kurtosis'], method = 'default', handle 
         cleaned_data = data[y_pred != -1]
         return outliers, cleaned_data
 
-    # if method == 'z-score':
-    #     mean = data.mean()
-    #     std = data.std()
+    if method == 'default':
+        outlier = pd.DataFrame()
+        cleaned_data = pd.DataFrame()
 
-    #     upper_limit = mean + 3*std
-    #     lower_limit = mean - 3*std
+        for column in data.columns:
+            if is_normal_distribution(data[column]):
+                mean = data[column].mean()
+                std = data[column].std()
 
-    #     outliers = data[(data > upper_limit) | (data < lower_limit)]
-        
-    #     if get_outliers == True:
-    #         return outliers, data_cleaned
-    #     else:
-    #         return data_cleaned
+                upper_limit = mean + 3*std
+                lower_limit = mean - 3*std
+
+                outliers[column] = data[(data[column] > upper_limit) | (data[column] < lower_limit)][column]
+                cleaned_data[column] = data[(data[column] < upper_limit) & (data[column] > lower_limit)][column]
+            
+            else:
+                q25 = data.quantile(0.25)
+                q75 = data.quantile(0.75)
+
+                iqr = q75 - q25
+
+                upper_limit = q75 + 1.5 * iqr
+                lower_limit = q25 - 1.5 * iqr
+                    
+                outliers[column] = data[(data[column] > upper_limit) | (data[column] < lower_limit)][column]
+                cleaned_data[column] = data[(data[column] < upper_limit) & (data[column] > lower_limit)][column]
+        return outliers, cleaned_data
     
-    # if method == 'iqr':
-    #     q25 = data.quantile(0.25)
-    #     q75 = data.quantile(0.75)
-
-    #     iqr = q75 - q25
-
-    #     upper_limit = q75 + 1.5 * iqr
-    #     lower_limit = q25 - 1.5 * iqr
-        
-    #     outliers = data[(data > upper_limit) | (data < lower_limit)]
-
-    #     if get_outliers == True:
-    #         return outliers, data_cleaned
-    #     else:
-    #         return data_cleaned
-
 
 data = pd.read_csv('data\placement.csv')
 print(data.shape)
