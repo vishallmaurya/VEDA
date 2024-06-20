@@ -117,7 +117,7 @@ def get_outliermethod_params(methodname):
 
 
 
-def handle_outliers(data, tests = ['skew-kurtosis'], method = 'default', handle = "capping", lower_percentile = 0.03, upper_percentile = 0.97):
+def handle_outliers(data, tests = ['skew-kurtosis'], method = 'default', handle = "capping"):
     
     """
         error handling
@@ -192,7 +192,7 @@ def handle_outliers(data, tests = ['skew-kurtosis'], method = 'default', handle 
         return outliers, cleaned_data
 
     if method == 'default':
-        outlier = pd.DataFrame()
+        outliers = pd.DataFrame()
         cleaned_data = pd.DataFrame()
 
         for column in data.columns:
@@ -202,25 +202,24 @@ def handle_outliers(data, tests = ['skew-kurtosis'], method = 'default', handle 
 
                 upper_limit = mean + 3*std
                 lower_limit = mean - 3*std
-
+                
                 outliers[column] = data[(data[column] > upper_limit) | (data[column] < lower_limit)][column]
                 cleaned_data[column] = data[(data[column] < upper_limit) & (data[column] > lower_limit)][column]
             
             else:
-                q25 = data.quantile(0.25)
-                q75 = data.quantile(0.75)
+                q25 = data[column].quantile(0.25)
+                q75 = data[column].quantile(0.75)
 
                 iqr = q75 - q25
 
                 upper_limit = q75 + 1.5 * iqr
                 lower_limit = q25 - 1.5 * iqr
-                    
+
                 outliers[column] = data[(data[column] > upper_limit) | (data[column] < lower_limit)][column]
                 cleaned_data[column] = data[(data[column] < upper_limit) & (data[column] > lower_limit)][column]
         return outliers, cleaned_data
     
 
 data = pd.read_csv('data\placement.csv')
-print(data.shape)
-cleaned = handle_outliers(data['cgpa'], method = 'isolation-forest')
-print(cleaned.shape)
+outliers, cleaned = handle_outliers(data.drop(['placed'], axis=1))
+print(outliers)
