@@ -192,9 +192,9 @@ def handle_outliers(data, tests = ['skew-kurtosis'], method = 'default', handle 
         return outliers, cleaned_data
 
     if method == 'default':
-        outliers = pd.DataFrame()
-        cleaned_data = pd.DataFrame()
-
+        outliers = pd.DataFrame(columns=data.columns)
+        cleaned_data = data.copy()
+        outlier_indices = []
         for column in data.columns:
             if is_normal_distribution(data[column]):
                 mean = data[column].mean()
@@ -203,9 +203,6 @@ def handle_outliers(data, tests = ['skew-kurtosis'], method = 'default', handle 
                 upper_limit = mean + 3*std
                 lower_limit = mean - 3*std
                 
-                outliers[column] = data[(data[column] > upper_limit) | (data[column] < lower_limit)][column]
-                cleaned_data[column] = data[(data[column] < upper_limit) & (data[column] > lower_limit)][column]
-            
             else:
                 q25 = data[column].quantile(0.25)
                 q75 = data[column].quantile(0.75)
@@ -215,11 +212,16 @@ def handle_outliers(data, tests = ['skew-kurtosis'], method = 'default', handle 
                 upper_limit = q75 + 1.5 * iqr
                 lower_limit = q25 - 1.5 * iqr
 
-                outliers[column] = data[(data[column] > upper_limit) | (data[column] < lower_limit)][column]
-                cleaned_data[column] = data[(data[column] < upper_limit) & (data[column] > lower_limit)][column]
+            outlier_indices.extend(data.index[(data[column] > upper_limit) | (data[column] < lower_limit)])
+        
+        outliers = data.iloc[outlier_indices]
+        cleaned_data.drop(outliers.index, inplace=True)
         return outliers, cleaned_data
     
-
 data = pd.read_csv('data\placement.csv')
 outliers, cleaned = handle_outliers(data.drop(['placed'], axis=1))
-print(outliers)
+print("Original data shape: ", data.shape)
+print("outlier data shape: ", outliers.shape)
+print("Cleaned data shape: ", cleaned.shape)
+print("Original data shape: ", (data.shape[0]-cleaned.shape[0])/data.shape[0])
+
