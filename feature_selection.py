@@ -7,16 +7,12 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 import statsmodels.api as sm
 
-# Load your data
-# df = pd.read_csv('data.csv')
-# Assuming df is your DataFrame and 'target' is the target variable
-X = df.drop(columns=['target'])
-y = df['target']
 
-# Standardize the features
-scaler = StandardScaler()
-X_scaled = scaler.fit_transform(X)
-X_scaled_df = pd.DataFrame(X_scaled, columns=X.columns)
+def standardize(df):
+    scaler = StandardScaler()
+    df_scaled = scaler.fit_transform(df)
+    scaled_data = pd.DataFrame(df_scaled, columns=df.columns)
+    return scaled_data
 
 # Feature selection with correlation coefficient
 def select_correlation_features(X, y, threshold=0.1):
@@ -91,20 +87,28 @@ def select_aic_bic_features(X, y):
             
     return best_aic_features, best_bic_features
 
-# Apply the selection methods
-correlation_features = select_correlation_features(X, y)
-chi2_features = select_chi2_features(X_scaled_df, y)
-mi_features = select_mi_features(X_scaled_df, y)
-lasso_features = select_lasso_features(X_scaled_df, y)
-aic_features, bic_features = select_aic_bic_features(X, y)
 
-# Combine selected features from all methods
-all_selected_features = list(set(correlation_features + 
-                                 [X.columns[i] for i in chi2_features] + 
-                                 [X.columns[i] for i in mi_features] + 
-                                 [X.columns[i] for i in lasso_features] + 
-                                 aic_features + 
-                                 bic_features))
 
-# Print the final selected features
-print(f"Selected features: {all_selected_features}")
+# Load your data
+# df = pd.read_csv('data.csv')
+# Assuming df is your DataFrame and 'target' is the target variable
+# X = df.drop(columns=['target'])
+# y = df['target']
+
+# # Apply the selection methods
+# correlation_features = select_correlation_features(X, y)
+# chi2_features = select_chi2_features(X_scaled_df, y)
+# mi_features = select_mi_features(X_scaled_df, y)
+# lasso_features = select_lasso_features(X_scaled_df, y)
+# aic_features, bic_features = select_aic_bic_features(X, y)
+
+# # Combine selected features from all methods
+# all_selected_features = list(set(correlation_features + 
+#                                  [X.columns[i] for i in chi2_features] + 
+#                                  [X.columns[i] for i in mi_features] + 
+#                                  [X.columns[i] for i in lasso_features] + 
+#                                  aic_features + 
+#                                  bic_features))
+
+# # Print the final selected features
+# print(f"Selected features: {all_selected_features}")
