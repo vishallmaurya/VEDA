@@ -61,6 +61,12 @@ def drop_row_column(df, datalosspercent = 10, limit = 0.04):
         raise ValueError(f"Invalid datatype {type(df)} this function accept pandas dataframe")
 
     null_count = df.isnull().sum().values.sum()
+    
+    for col in df.columns:
+        if df[col].nunique() == df.shape[0]:
+            df.drop(col, axis=1, inplace=True)
+
+
     if null_count == 0: # if data is completely clean
         return df
     else:
@@ -246,6 +252,6 @@ def callingfunc():
     df = pd.read_csv('data\data_science_job.csv')
 
     for col in df.columns:
-        print(f"Column {col} :  {df.loc[1,col]}")
+        print(f"Column {col} :  {df[col].nunique()}")
 
 callingfunc()
