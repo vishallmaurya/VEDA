@@ -1,23 +1,18 @@
-import numpy as np
 import pandas as pd
 
-df = pd.read_csv('data\dirty_iris.csv')
-# print(df.head(5))
-# print(df.describe())
-df1 = pd.read_csv('temp_file.csv')
+data = pd.DataFrame({"text": ["Hello world!", "123 Main St", "This is some text."]})
 
-categorical_column = list(df.columns[df.dtypes == 'object'])
-numerical_column = [col for col in df.columns if col not in categorical_column]
+# Check for object dtype
+if pd.api.types.is_object_dtype(data["text"]):
+  print("The 'text' column might contain textual data.")
 
-print(f"Numerical columns name: {numerical_column}")
-print(f"Categorical columns name: {categorical_column}")
+# Check for alphanumeric characters
+is_alnum = data["text"].str.isalnum()
+print(f"Checking : {is_alnum}")
+print("'text' column has alphanumeric characters:", is_alnum.all())
 
-print(df.shape) 
-df2 = df.dropna()
-print(df2.shape)
-
-# print(df1.dtypes)
-
-
-# print(df[df.duplicated()])
-# df.drop_duplicates(inplace=True)
+# Use regular expression (example: check for digits at the beginning)
+import re
+pattern = r"^\d+"
+has_digits_at_start = data["text"].str.contains(pattern)
+print("'text' column has digits at the start:", has_digits_at_start.any())
