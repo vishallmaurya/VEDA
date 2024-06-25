@@ -17,6 +17,33 @@ def delete_duplicates(df, keep = 'first'):
     raise ValueError(f"Invalid datatype {type(df)} this function accept pandas dataframe")
 
 
+
+"""
+    parameter:
+        df: pandas dataframe
+"""
+
+def checktype(df, limit = 5.0):
+    if isinstance(df, pd.Series):
+        df = df.to_frame()
+
+    columns = df.columns
+
+    for cols in columns:
+        if pd.api.types.is_object_dtype(df[cols]):
+            count = df[cols].nunique()
+            percent_count = (count/df[cols].shape[0])*100 
+
+            if percent_count <= limit:
+                df[cols] = df[cols].astype('category')
+            else:
+                df.drop(cols, axis=1, inplace=True)
+
+
+"""
+    function ends
+"""
+
 # CCA--> Complete case Analysis
 
 """
@@ -217,6 +244,8 @@ def one_hot_labelencoder(df, type = 'onehot', columns = [], sparse = False):
 
 def callingfunc():
     df = pd.read_csv('data\data_science_job.csv')
-    print(isinstance(df, pd.DataFrame))
-    
+
+    for col in df.columns:
+        print(f"Column {col} :  {df.loc[1,col]}")
+
 callingfunc()
