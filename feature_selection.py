@@ -6,7 +6,7 @@ from sklearn.metrics import r2_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 import statsmodels.api as sm
-
+import missing_value as mv
 
 def standardize(df):
     scaler = StandardScaler()
@@ -89,26 +89,25 @@ def select_aic_bic_features(X, y):
 
 
 
-# Load your data
-# df = pd.read_csv('data.csv')
-# Assuming df is your DataFrame and 'target' is the target variable
-# X = df.drop(columns=['target'])
-# y = df['target']
 
-# # Apply the selection methods
-# correlation_features = select_correlation_features(X, y)
-# chi2_features = select_chi2_features(X_scaled_df, y)
-# mi_features = select_mi_features(X_scaled_df, y)
-# lasso_features = select_lasso_features(X_scaled_df, y)
-# aic_features, bic_features = select_aic_bic_features(X, y)
+def callingfunc():
+    df = pd.read_csv('data\placement.csv')
+    X = df.drop(columns=['placed'])
+    y = df['placed']
+    X_scaled_df = standardize(X)
+    correlation_features = select_correlation_features(X, y)
+    chi2_features = select_chi2_features(X_scaled_df, y)
+    mi_features = select_mi_features(X_scaled_df, y)
+    lasso_features = select_lasso_features(X_scaled_df, y)
+    aic_features, bic_features = select_aic_bic_features(X, y)
 
-# # Combine selected features from all methods
-# all_selected_features = list(set(correlation_features + 
-#                                  [X.columns[i] for i in chi2_features] + 
-#                                  [X.columns[i] for i in mi_features] + 
-#                                  [X.columns[i] for i in lasso_features] + 
-#                                  aic_features + 
-#                                  bic_features))
+    all_selected_features = list(set(correlation_features + 
+                                 [X.columns[i] for i in chi2_features] + 
+                                 [X.columns[i] for i in mi_features] + 
+                                 [X.columns[i] for i in lasso_features] + 
+                                 aic_features + 
+                                 bic_features))
 
-# # Print the final selected features
-# print(f"Selected features: {all_selected_features}")
+    print(f"Selected features: {all_selected_features}")
+
+callingfunc()
