@@ -3,6 +3,7 @@ import numpy as np
 from sklearn.impute import SimpleImputer, KNNImputer
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder, LabelEncoder
+from sklearn.pipeline import Pipeline,make_pipeline
 
 
 
@@ -23,7 +24,7 @@ def delete_duplicates(df, keep = 'first'):
         df: pandas dataframe
 """
 
-def checktype(df, limit = 5.0):
+def make_category_columns(df, limit = 5.0):
     if isinstance(df, pd.Series):
         df = df.to_frame()
 
@@ -246,6 +247,29 @@ def one_hot_labelencoder(df, type = 'onehot', columns = [], sparse = False):
         df[columns] = labelencoder.fit_transform(df[columns])
     else:
         raise ValueError("Invalid parameter did you mean 'onehot' or 'labelencode'?")
+
+
+
+
+"""
+    Trying pipeline module
+"""
+
+def get_pipeline():
+    pipe = Pipeline([
+        ('delete_duplicates', delete_duplicates()),
+        ('create_category', make_category_columns()),
+        ('drop_null', drop_row_column()),
+        ('univariate_imputation', impute_row_column()),
+        ('multivariate_imputation', multivariate_impute()),
+        ('label_encoding' , one_hot_labelencoder())
+    ])
+
+"""
+    function ended
+"""
+
+
 
 
 def callingfunc():
