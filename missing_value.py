@@ -24,7 +24,7 @@ def delete_duplicates(df, keep = 'first'):
         df: pandas dataframe
 """
 
-def make_category_columns(df, limit = 5.0):
+def make_category_columns(df, min_cat_percent = 5.0):
     if isinstance(df, pd.Series):
         df = df.to_frame()
 
@@ -35,7 +35,7 @@ def make_category_columns(df, limit = 5.0):
             count = df[cols].nunique()
             percent_count = (count/df[cols].shape[0])*100 
 
-            if percent_count <= limit:
+            if percent_count <= min_cat_percent:
                 df[cols] = df[cols].astype('category')
             else:
                 df.drop(cols, axis=1, inplace=True)
@@ -57,7 +57,7 @@ def make_category_columns(df, limit = 5.0):
 """
 
 
-def drop_row_column(df, datalosspercent = 10, limit = 0.04):
+def drop_row_column(df, datalosspercent = 10, min_var = 0.04):
     if isinstance(df, pd.DataFrame) == False:
         raise ValueError(f"Invalid datatype {type(df)} this function accept pandas dataframe")
 
@@ -71,8 +71,8 @@ def drop_row_column(df, datalosspercent = 10, limit = 0.04):
     if null_count == 0: # if data is completely clean
         return df
     else:
-        limited_null_columns = [var for var in df.columns if df[var].isnull().mean() <= limit]
-        excessive_null_columns = [var for var in df.columns if df[var].isnull().mean() > limit]
+        limited_null_columns = [var for var in df.columns if df[var].isnull().mean() <= min_var]
+        excessive_null_columns = [var for var in df.columns if df[var].isnull().mean() > min_var]
 
         if len(limited_null_columns) == 0:
             return df       
@@ -99,7 +99,7 @@ def drop_row_column(df, datalosspercent = 10, limit = 0.04):
     univariate imputation on numerical column and categorical column
 """
 
-def impute_row_column(df, limit = 0.04, var_diff = 0.05, mod_diff = 0.05, numerical_column = [], categorical_column = [], temporal_column = [], temporal_type = 'interpolate'):
+def impute_row_column(df, min_var = 0.04, var_diff = 0.05, mod_diff = 0.05, numerical_column = [], categorical_column = [], temporal_column = [], temporal_type = 'interpolate'):
 
     """
         error handling
@@ -107,7 +107,7 @@ def impute_row_column(df, limit = 0.04, var_diff = 0.05, mod_diff = 0.05, numeri
     if isinstance(df, pd.DataFrame) == False:
         raise ValueError(f"Invalid datatype {type(df)} this function accept pandas dataframe")
 
-    if(limit > 1 or limit < 0):
+    if(min_var > 1 or min_var < 0):
         raise ValueError("Invalid value. Value of limit should be from 0 to 1 inclusive.")
     if(var_diff > 1 or var_diff < 0):
         raise ValueError("Invalid value. Value of var_diff should be from 0 to 1 inclusive.")
@@ -126,7 +126,7 @@ def impute_row_column(df, limit = 0.04, var_diff = 0.05, mod_diff = 0.05, numeri
         return df
     else:
         # columns that have less than given null values limit
-        limited_null_columns = [var for var in df.columns if df[var].isnull().mean() <= limit]
+        limited_null_columns = [var for var in df.columns if df[var].isnull().mean() <= min_var]
         
         if len(limited_null_columns) == 0:
             return df
@@ -233,16 +233,16 @@ def multivariate_impute(df, n_neighbors = 5):
 """
 
 
-def one_hot_labelencoder(df, type = 'onehot', columns = [], sparse = False):
+def one_hot_labelencoder(df, lable_encoding_type = 'onehot', columns = [], sparse = False):
     if isinstance(df, pd.DataFrame) == False:
         raise ValueError(f"Invalid datatype {type(df)} this function accept pandas dataframe")
 
     if len(columns) == 0:
             raise ValueError("length of columns can't be zero")    
-    if type == 'onehot':
+    if lable_encoding_type == 'onehot':
         onehotencoder = OneHotEncoder(sparse=False)
         df[columns] = onehotencoder.fit_transform(df[columns])
-    elif type == 'labelencode':
+    elif lable_encoding_type == 'labelencode':
         labelencoder = LabelEncoder()
         df[columns] = labelencoder.fit_transform(df[columns])
     else:
@@ -255,14 +255,21 @@ def one_hot_labelencoder(df, type = 'onehot', columns = [], sparse = False):
     Trying pipeline module
 """
 
-def get_pipeline():
+
+def get_pipeline(df, keep='first', min_cat_percent = 5.0,
+                datalosspercent = 10, min_var = 0.04, var_diff = 0.05,
+                mod_diff = 0.05, numerical_column = [],
+                categorical_column = [], temporal_column = [],
+                temporal_type = 'interpolate', n_neighbors = 5,
+                lable_encoding_type = 'onehot', columns = [], sparse = False):
+    
     pipe = Pipeline([
-        ('delete_duplicates', delete_duplicates()),
-        ('create_category', make_category_columns()),
-        ('drop_null', drop_row_column()),
-        ('univariate_imputation', impute_row_column()),
-        ('multivariate_imputation', multivariate_impute()),
-        ('label_encoding' , one_hot_labelencoder())
+        ('delete_duplicates', delete_duplicates(df, keep)),
+        ('create_category', make_category_columns(df, min_cat_percent)),
+        ('drop_null', drop_row_column(df, datalosspercent, min_var)),
+        ('univariate_imputation', impute_row_column(df, min_var , var_diff , mod_diff , numerical_column = [], categorical_column = [], temporal_column = [], temporal_type='interpolate')),
+        ('multivariate_imputation', multivariate_impute(df, n_neighbors)),
+        ('label_encoding' , one_hot_labelencoder(df, lable_encoding_type, columns=[], sparse=False))
     ])
 
 """
