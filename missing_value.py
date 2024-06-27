@@ -1,10 +1,10 @@
 import pandas as pd
 import numpy as np
-from sklearn.impute import SimpleImputer, KNNImputer
+from sklearn.experimental import enable_iterative_imputer
+from sklearn.impute import SimpleImputer, KNNImputer, IterativeImputer
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder, LabelEncoder
 from sklearn.pipeline import Pipeline,make_pipeline
-
 
 
 """
@@ -14,7 +14,8 @@ from sklearn.pipeline import Pipeline,make_pipeline
 
 def delete_duplicates(df, keep = 'first'):
     if isinstance(df, pd.DataFrame):
-        return df.drop_duplicates(keep)
+        df.drop_duplicates(keep=keep, inplace=True)
+        return
     raise ValueError(f"Invalid datatype {type(df)} this function accept pandas dataframe")
 
 
@@ -39,7 +40,7 @@ def make_category_columns(df, min_cat_percent = 5.0):
                 df[cols] = df[cols].astype('category')
             else:
                 df.drop(cols, axis=1, inplace=True)
-
+    return 
 
 """
     function ends
@@ -67,15 +68,14 @@ def drop_row_column(df, datalosspercent = 10, min_var = 0.04):
         if df[col].nunique() == df.shape[0]:
             df.drop(col, axis=1, inplace=True)
 
-
     if null_count == 0: # if data is completely clean
-        return df
+        return
     else:
         limited_null_columns = [var for var in df.columns if df[var].isnull().mean() <= min_var]
         excessive_null_columns = [var for var in df.columns if df[var].isnull().mean() > min_var]
 
         if len(limited_null_columns) == 0:
-            return df       
+            return   
         else:
             new_df = df[limited_null_columns].dropna()
             new_df[excessive_null_columns] = df[excessive_null_columns]
@@ -83,9 +83,10 @@ def drop_row_column(df, datalosspercent = 10, min_var = 0.04):
             change = ((df.shape[0]-new_df.shape[0])/df.shape[0])*100
 
             if change > datalosspercent:
-                return df
+                return 
             else:
-                return new_df
+                df = new_df
+                return
 
 # Univariate Imputation 
 
@@ -123,25 +124,25 @@ def impute_row_column(df, min_var = 0.04, var_diff = 0.05, mod_diff = 0.05, nume
 
     null_count = df.isnull().sum().values.sum()
     if null_count == 0: # if data is completely clean
-        return df
+        return
     else:
         # columns that have less than given null values limit
         limited_null_columns = [var for var in df.columns if df[var].isnull().mean() <= min_var]
         
         if len(limited_null_columns) == 0:
-            return df
+            return
         else:
             # checking for categorical column
             
             if len(categorical_column) == 0:
                 category_type = ['object', 'category', 'string', 'interval', 'bool']
                 categorical_column = [col for col in df.columns if col in limited_null_columns and (df[col].dtype in category_type)]
-            if len(categorical_column) == 0:
+            if len(numerical_column) == 0:
                 numeric_type = ['int64', 'int32', 'int16', 'int8', 'uint64', 'uint32', 'uint16', 'uint8', 'float64', 'float32']
                 numerical_column = [col for col in df.columns if col in limited_null_columns and (df[col].dtype in numeric_type)]
             if len(temporal_column) == 0:
                 time_type = ['datetime64[ns]', 'timedelta64[ns]', 'datetime64[ns, tz]', 'period']
-                temporal_column = [col for col in df.column if col in limited_null_columns and (df[col].dtype in time_type)]
+                temporal_column = [col for col in df.columns if col in limited_null_columns and (df[col].dtype in time_type)]
             
             imputer1 = SimpleImputer(strategy='median')
             imputer2 = SimpleImputer(strategy='mean')
@@ -180,14 +181,14 @@ def impute_row_column(df, min_var = 0.04, var_diff = 0.05, mod_diff = 0.05, nume
                     new_data[numerical_column[i]] = df[numerical_column[i]]
 
             # handling of categorical column
-
+            
             for i in range(len(categorical_column)):
                 values = df[categorical_column[i]].value_counts().sort_values(ascending=False)
                 if values.iloc[1]/values.iloc[0] > mod_diff:
                     continue
                 else:
                     new_data[categorical_column[i]] = mode[:, i]
-
+                
             # handling of temporal column
 
             for i in range(len(temporal_column)):
@@ -199,8 +200,9 @@ def impute_row_column(df, min_var = 0.04, var_diff = 0.05, mod_diff = 0.05, nume
                     new_data[temporal_column[i]] = df[temporal_column[i]].interpolate()
                 else:
                     raise ValueError("incorrect method used")
-
-            return new_data
+            
+            df = new_data
+            return
 
 # multivariate knn Imputer
 
@@ -217,10 +219,49 @@ def impute_row_column(df, min_var = 0.04, var_diff = 0.05, mod_diff = 0.05, nume
 def multivariate_impute(df, n_neighbors = 5):
     if isinstance(df, pd.DataFrame) == False:
         raise ValueError(f"Invalid datatype {type(df)} this function accept pandas dataframe")
-    knn = KNNImputer()
-    new_data = df
-    new_data[df.columns] = knn.fit_transform(df)
-    return new_data
+    
+    numeric_type = ['int64', 'int32', 'int16', 'int8', 'uint64', 'uint32', 'uint16', 'uint8', 'float64', 'float32']
+    null_numeric_columns = [col for col in df.columns if (df[col].isnull().sum() > 0) and (df[col].dtype in numeric_type)]
+
+    category_type = ['object', 'category', 'string', 'interval', 'bool']
+    null_category_columns = [col for col in df.columns if (df[col].isnull().sum() > 0) and (df[col].dtype in category_type)]
+
+    if len(null_numeric_columns) > 0:
+        knn = KNNImputer()
+        df[null_numeric_columns] = knn.fit_transform(df[null_numeric_columns])
+
+    if len(null_category_columns) > 0:
+        # label_encoder = LabelEncoder()
+        # df[null_category_columns] = label_encoder.fit_transform(df[null_category_columns].astype(str))
+
+        # df[null_category_columns] = df[null_category_columns].replace(label_encoder.transform(['nan'])[0], np.nan)
+
+        # imputer = IterativeImputer(max_iter=10, random_state=0)
+        # df[null_category_columns] = imputer.fit_transform(df[null_category_columns])
+        # df[null_category_columns] = label_encoder.inverse_transform(df[null_category_columns].astype(int))
+
+        label_encoders = {}
+
+        for column in null_category_columns:
+            label_encoder = LabelEncoder()
+            df[column] = df[column].astype(str)
+            df[column] = label_encoder.fit_transform(df[column].replace('nan', np.nan))
+            label_encoders[column] = label_encoder
+
+        imputer = IterativeImputer(max_iter=10, random_state=0)
+        df[null_category_columns] = imputer.fit_transform(df[null_category_columns])
+    
+        print("herhere\n\n", df.isna().sum())
+
+        for column in null_category_columns:
+            label_encoder = label_encoders[column]
+            df[column] = label_encoder.inverse_transform(df[column].astype(int))
+
+    print(df.isna().sum())
+
+    return 
+
+
 
 # categorical label encoder
 
@@ -236,11 +277,15 @@ def multivariate_impute(df, n_neighbors = 5):
 def one_hot_labelencoder(df, lable_encoding_type = 'onehot', columns = [], sparse = False):
     if isinstance(df, pd.DataFrame) == False:
         raise ValueError(f"Invalid datatype {type(df)} this function accept pandas dataframe")
+    
+    if len(columns) == 0:
+        category_type = ['object', 'category', 'string', 'bool']
+        columns = [col for col in df.columns if (df[col].dtype in category_type)]
 
     if len(columns) == 0:
-            raise ValueError("length of columns can't be zero")    
+        return 
     if lable_encoding_type == 'onehot':
-        onehotencoder = OneHotEncoder(sparse=False)
+        onehotencoder = OneHotEncoder(sparse_output=sparse)
         df[columns] = onehotencoder.fit_transform(df[columns])
     elif lable_encoding_type == 'labelencode':
         labelencoder = LabelEncoder()
@@ -256,7 +301,7 @@ def one_hot_labelencoder(df, lable_encoding_type = 'onehot', columns = [], spars
 """
 
 
-def get_pipeline(df, keep='first', min_cat_percent = 5.0,
+def get_data(df, keep='first', min_cat_percent = 5.0,
                 datalosspercent = 10, min_var = 0.04, var_diff = 0.05,
                 mod_diff = 0.05, numerical_column = [],
                 categorical_column = [], temporal_column = [],
@@ -264,25 +309,27 @@ def get_pipeline(df, keep='first', min_cat_percent = 5.0,
                 lable_encoding_type = 'onehot', columns = [], sparse = False):
     
     pipe = Pipeline([
-        ('delete_duplicates', delete_duplicates(df, keep)),
-        ('create_category', make_category_columns(df, min_cat_percent)),
-        ('drop_null', drop_row_column(df, datalosspercent, min_var)),
-        ('univariate_imputation', impute_row_column(df, min_var , var_diff , mod_diff , numerical_column = [], categorical_column = [], temporal_column = [], temporal_type='interpolate')),
-        ('multivariate_imputation', multivariate_impute(df, n_neighbors)),
-        ('label_encoding' , one_hot_labelencoder(df, lable_encoding_type, columns=[], sparse=False))
+        ('delete_duplicates', delete_duplicates(df)),
+        ('create_category', make_category_columns(df)),
+        ('drop_null', drop_row_column(df)),
+        ('univariate_imputation', impute_row_column(df, numerical_column = [], categorical_column = [], temporal_column = [])),
+        ('multivariate_imputation', multivariate_impute(df)),
+        ('label_encoding' , one_hot_labelencoder(df,columns=[]))
     ])
+
+    # data = pipe.fit_transform(df)
+    return 0
+    # return data
 
 """
     function ended
 """
 
-
-
-
 def callingfunc():
     df = pd.read_csv('data\data_science_job.csv')
 
-    for col in df.columns:
-        print(f"Column {col} :  {df[col].nunique()}")
-
+    # for col in df.columns:
+    #     print(f"Column {col} :  {df[col].nunique()}")
+    X = get_data(df.drop('target', axis=1))
+    # print(X.shape)
 callingfunc()
