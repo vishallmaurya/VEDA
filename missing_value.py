@@ -231,33 +231,23 @@ def multivariate_impute(df, n_neighbors = 5):
         df[null_numeric_columns] = knn.fit_transform(df[null_numeric_columns])
 
     if len(null_category_columns) > 0:
-        # label_encoder = LabelEncoder()
-        # df[null_category_columns] = label_encoder.fit_transform(df[null_category_columns].astype(str))
-
-        # df[null_category_columns] = df[null_category_columns].replace(label_encoder.transform(['nan'])[0], np.nan)
-
-        # imputer = IterativeImputer(max_iter=10, random_state=0)
-        # df[null_category_columns] = imputer.fit_transform(df[null_category_columns])
-        # df[null_category_columns] = label_encoder.inverse_transform(df[null_category_columns].astype(int))
-
         label_encoders = {}
 
         for column in null_category_columns:
-            df[column].fillna('Unknown', inplace=True)
+            df[column] = df[column].cat.add_categories(['Unknown'])
+            df[column] = df[column].fillna('Unknown')
             label_encoder = LabelEncoder()
             df[column] = label_encoder.fit_transform(df[column])
             label_encoders[column] = label_encoder
 
+
         imputer = IterativeImputer(max_iter=10, random_state=0)
         df[null_category_columns] = imputer.fit_transform(df[null_category_columns])
-
-        print(f"\n\n\n\nbefore\n\n\n{df.isna().sum()}")
 
         for column in null_category_columns:
             df[column] = df[column].round().astype(int)
             df[column] = df[column].apply(lambda x: x if x < len(label_encoders[column].classes_) else len(label_encoders[column].classes_) - 1)
             df[column] = label_encoders[column].inverse_transform(df[column])
-    print(f"\n\n\n\nafter\n\n\n{df.isna().sum()}")
     
     return 
 
