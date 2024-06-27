@@ -241,7 +241,7 @@ def multivariate_impute(df, n_neighbors = 5):
             label_encoders[column] = label_encoder
 
 
-        imputer = IterativeImputer(max_iter=10, random_state=0)
+        imputer = IterativeImputer(max_iter=10, random_state=42)
         df[null_category_columns] = imputer.fit_transform(df[null_category_columns])
 
         for column in null_category_columns:
@@ -276,15 +276,17 @@ def one_hot_labelencoder(df, lable_encoding_type = 'onehot', columns = [], spars
         return 
     if lable_encoding_type == 'onehot':
         onehotencoder = OneHotEncoder(sparse_output=sparse)
-        df[columns] = onehotencoder.fit_transform(df[columns])
+        transformed_data = onehotencoder.fit_transform(df[columns])
+        transformed_df = pd.DataFrame(transformed_data.toarray() if sparse else transformed_data, columns=onehotencoder.get_feature_names_out(columns))
+        df = df.drop(columns, axis=1)
+        df = pd.concat([df, transformed_df], axis=1)
     elif lable_encoding_type == 'labelencode':
-        labelencoder = LabelEncoder()
-        df[columns] = labelencoder.fit_transform(df[columns])
+        for column in columns:
+            labelencoder = LabelEncoder()
+            df[column] = labelencoder.fit_transform(df[column])
     else:
-        raise ValueError("Invalid parameter did you mean 'onehot' or 'labelencode'?")
-
-
-
+        raise ValueError("Invalid parameter did you mean 'onehot' or 'labelencode'?")        
+    
 
 """
     Trying pipeline module
@@ -307,9 +309,8 @@ def get_data(df, keep='first', min_cat_percent = 5.0,
         ('label_encoding' , one_hot_labelencoder(df,columns=[]))
     ])
 
-    # data = pipe.fit_transform(df)
-    return 0
-    # return data
+    data = pipe.fit_transform(df)
+    return data
 
 """
     function ended
@@ -321,5 +322,5 @@ def callingfunc():
     # for col in df.columns:
     #     print(f"Column {col} :  {df[col].nunique()}")
     X = get_data(df.drop('target', axis=1))
-    # print(X.shape)
+    print(X.sample(5))
 callingfunc()
