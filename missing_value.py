@@ -239,8 +239,11 @@ def multivariate_impute(df, n_neighbors = 5):
             label_encoder = LabelEncoder()
             df[column] = label_encoder.fit_transform(df[column])
             label_encoders[column] = label_encoder
-
-
+        
+        for column in null_category_columns:
+            code = label_encoders[column].transform(['Unknown'])[0]
+            df[column] = df[column].replace(code, np.nan)
+        
         imputer = IterativeImputer(max_iter=10, random_state=42)
         df[null_category_columns] = imputer.fit_transform(df[null_category_columns])
 
@@ -264,7 +267,7 @@ def multivariate_impute(df, n_neighbors = 5):
 """
 
 
-def one_hot_labelencoder(df, lable_encoding_type = 'onehot', columns = [], sparse = False):
+def one_hot_labelencoder(df, lable_encoding_type = 'labelencode', columns = [], sparse = False):
     if isinstance(df, pd.DataFrame) == False:
         raise ValueError(f"Invalid datatype {type(df)} this function accept pandas dataframe")
     
