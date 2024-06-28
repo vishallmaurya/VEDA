@@ -267,7 +267,7 @@ def multivariate_impute(df, n_neighbors = 5):
 """
 
 
-def one_hot_labelencoder(df, lable_encoding_type = 'labelencode', columns = [], sparse = False):
+def one_hot_labelencoder(df, label_encoding_type = 'default', min_category = 5, columns = [], sparse = False):
     if isinstance(df, pd.DataFrame) == False:
         raise ValueError(f"Invalid datatype {type(df)} this function accept pandas dataframe")
     
@@ -277,18 +277,20 @@ def one_hot_labelencoder(df, lable_encoding_type = 'labelencode', columns = [], 
 
     if len(columns) == 0:
         return 
-    if lable_encoding_type == 'onehot':
-        onehotencoder = OneHotEncoder(sparse_output=sparse)
-        transformed_data = onehotencoder.fit_transform(df[columns])
-        transformed_df = pd.DataFrame(transformed_data.toarray() if sparse else transformed_data, columns=onehotencoder.get_feature_names_out(columns))
-        df = df.drop(columns, axis=1)
-        df = pd.concat([df, transformed_df], axis=1)
-    elif lable_encoding_type == 'labelencode':
-        for column in columns:
+    
+    for cols in columns:
+        number_of_category = df[cols].nunique()
+        if (label_encoding_type == 'onehot') or (label_encoding_type == 'default' and number_of_category <= min_category):
+            onehotencoder = OneHotEncoder(sparse_output=sparse)
+            transformed_data = onehotencoder.fit_transform(df[[cols]])
+            new_columns = onehotencoder.get_feature_names_out([cols])
+            df[new_columns] = transformed_data
+            df.drop(columns=cols, inplace=True)
+        elif label_encoding_type == 'default' or label_encoding_type == 'labelencode':
             labelencoder = LabelEncoder()
-            df[column] = labelencoder.fit_transform(df[column])
-    else:
-        raise ValueError("Invalid parameter did you mean 'onehot' or 'labelencode'?")        
+            df[cols] = labelencoder.fit_transform(df[cols])
+        else:
+            raise ValueError("Invalid parameter did you mean 'onehot' or 'labelencode'?")        
     
 
 """
@@ -321,9 +323,11 @@ def get_data(df, keep='first', min_cat_percent = 5.0,
 
 def callingfunc():
     df = pd.read_csv('data\data_science_job.csv')
-
+    print(df.shape)
     # for col in df.columns:
     #     print(f"Column {col} :  {df[col].nunique()}")
     X = get_data(df.drop('target', axis=1))
-    print(X.sample(5))
+    print(X.shape)
+    print(df.columns)
+    print(X.columns)
 callingfunc()
