@@ -37,7 +37,7 @@ def make_category_columns(df, min_cat_percent = 5.0):
             percent_count = (count/df[cols].shape[0])*100 
 
             if percent_count <= min_cat_percent:
-                df[cols] = df[cols].astype('category')
+                df[cols] = df[cols].astype('object')
             else:
                 df.drop(cols, axis=1, inplace=True)
     return 
@@ -232,13 +232,14 @@ def multivariate_impute(df, n_neighbors = 5):
 
     if len(null_category_columns) > 0:
         label_encoders = {}
-
+            
+        
         for column in null_category_columns:
-            df[column] = df[column].cat.add_categories(['Unknown'])
             df[column] = df[column].fillna('Unknown')
             label_encoder = LabelEncoder()
             df[column] = label_encoder.fit_transform(df[column])
             label_encoders[column] = label_encoder
+            
         
         for column in null_category_columns:
             code = label_encoders[column].transform(['Unknown'])[0]
@@ -251,7 +252,7 @@ def multivariate_impute(df, n_neighbors = 5):
             df[column] = df[column].round().astype(int)
             df[column] = df[column].apply(lambda x: x if x < len(label_encoders[column].classes_) else len(label_encoders[column].classes_) - 1)
             df[column] = label_encoders[column].inverse_transform(df[column])
-    
+       
     return 
 
 
@@ -311,7 +312,7 @@ def get_data(df, keep='first', min_cat_percent = 5.0,
         ('drop_null', drop_row_column(df)),
         ('univariate_imputation', impute_row_column(df, numerical_column = [], categorical_column = [], temporal_column = [])),
         ('multivariate_imputation', multivariate_impute(df)),
-        ('label_encoding' , one_hot_labelencoder(df,columns=[]))
+        # ('label_encoding' , one_hot_labelencoder(df,columns=[]))
     ])
 
     data = pipe.fit_transform(df)
@@ -324,10 +325,17 @@ def get_data(df, keep='first', min_cat_percent = 5.0,
 def callingfunc():
     df = pd.read_csv('data\data_science_job.csv')
     print(df.shape)
+    # print(df.columns)
     # for col in df.columns:
     #     print(f"Column {col} :  {df[col].nunique()}")
+    print(df['enrolled_university'].isna().sum())
     X = get_data(df.drop('target', axis=1))
     print(X.shape)
-    print(df.columns)
-    print(X.columns)
+    for col in X.columns:
+        # print(col)
+        if len(X[X[col] == 'Unknown']) > 0:
+            print(col, len(X[X[col] == 'Unknown']))
+    # print(X.shape)
+    # print(df.columns)
+    # print(X.columns)
 callingfunc()
