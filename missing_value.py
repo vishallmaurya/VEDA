@@ -6,7 +6,6 @@ from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder, LabelEncoder
 from sklearn.pipeline import Pipeline,make_pipeline
 
-
 """
     parameter:
         df: pandas dataframe
@@ -239,8 +238,8 @@ def multivariate_impute(df, n_neighbors = 5):
             label_encoder = LabelEncoder()
             df[column] = label_encoder.fit_transform(df[column])
             label_encoders[column] = label_encoder
-            
-        
+
+
         for column in null_category_columns:
             code = label_encoders[column].transform(['Unknown'])[0]
             df[column] = df[column].replace(code, np.nan)
@@ -248,6 +247,7 @@ def multivariate_impute(df, n_neighbors = 5):
         imputer = IterativeImputer(max_iter=10, random_state=42)
         df[null_category_columns] = imputer.fit_transform(df[null_category_columns])
 
+        
         for column in null_category_columns:
             df[column] = df[column].round().astype(int)
             df[column] = df[column].apply(lambda x: x if x < len(label_encoders[column].classes_) else len(label_encoders[column].classes_) - 1)
@@ -312,7 +312,7 @@ def get_data(df, keep='first', min_cat_percent = 5.0,
         ('drop_null', drop_row_column(df)),
         ('univariate_imputation', impute_row_column(df, numerical_column = [], categorical_column = [], temporal_column = [])),
         ('multivariate_imputation', multivariate_impute(df)),
-        # ('label_encoding' , one_hot_labelencoder(df,columns=[]))
+        ('label_encoding' , one_hot_labelencoder(df,columns=[]))
     ])
 
     data = pipe.fit_transform(df)
@@ -324,18 +324,8 @@ def get_data(df, keep='first', min_cat_percent = 5.0,
 
 def callingfunc():
     df = pd.read_csv('data\data_science_job.csv')
-    print(df.shape)
-    # print(df.columns)
-    # for col in df.columns:
-    #     print(f"Column {col} :  {df[col].nunique()}")
-    print(df['enrolled_university'].isna().sum())
+    print("initial shape: ", df.shape)
     X = get_data(df.drop('target', axis=1))
-    print(X.shape)
-    for col in X.columns:
-        # print(col)
-        if len(X[X[col] == 'Unknown']) > 0:
-            print(col, len(X[X[col] == 'Unknown']))
-    # print(X.shape)
-    # print(df.columns)
-    # print(X.columns)
+    print("Returned shape: ",X.shape)
+    
 callingfunc()
