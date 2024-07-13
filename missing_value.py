@@ -324,8 +324,7 @@ def get_data(df, keep='first', min_cat_percent = 5.0,
 
 def callingfunc():
     df = pd.read_csv('data\data_science_job.csv')
-    print("initial shape: ", df.shape)
     X = get_data(df.drop('target', axis=1))
-    print("Returned shape: ",X.shape)
+    return X, df['target']
     
 callingfunc()
