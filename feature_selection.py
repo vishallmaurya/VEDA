@@ -3,9 +3,10 @@ import numpy as np
 from sklearn.feature_selection import chi2, mutual_info_classif, SelectKBest
 from sklearn.linear_model import Lasso
 from sklearn.metrics import r2_score
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.preprocessing import StandardScaler
 import statsmodels.api as sm
+from concurrent.futures import ThreadPoolExecutor
 import missing_value as mv
 
 def standardize(df):
@@ -22,8 +23,10 @@ def select_correlation_features(X, y, threshold=0.1):
 
 # Feature selection with chi-squared test
 def select_chi2_features(X, y, k=10):
+    # Ensure X is non-negative
+    X_non_negative = X - X.min().min()
     chi2_selector = SelectKBest(chi2, k=k)
-    chi2_selector.fit(X, y)
+    chi2_selector.fit(X_non_negative, y)
     selected_features = chi2_selector.get_support(indices=True)
     return selected_features
 
@@ -87,28 +90,36 @@ def select_aic_bic_features(X, y):
             
     return best_aic_features, best_bic_features
 
-
-
-
 def callingfunc():
     X, y = mv.callingfunc()
     X_scaled_df = standardize(X)
     print(f"Shape of feature before feature selection:  {X.shape}")
-    correlation_features = select_correlation_features(X, y)
-    # chi2_features = select_chi2_features(X_scaled_df, y)
-    mi_features = select_mi_features(X_scaled_df, y)
-    lasso_features = select_lasso_features(X_scaled_df, y)
-    aic_features, bic_features = select_aic_bic_features(X, y)
+
+    # Perform feature selection in parallel
+    with ThreadPoolExecutor() as executor:
+        futures = {
+            executor.submit(select_correlation_features, X, y): "correlation_features",
+            executor.submit(select_chi2_features, X_scaled_df, y): "chi2_features",
+            executor.submit(select_mi_features, X_scaled_df, y): "mi_features",
+            executor.submit(select_lasso_features, X_scaled_df, y): "lasso_features",
+            executor.submit(select_aic_bic_features, X, y): "aic_bic_features"
+        }
+        results = {name: future.result() for future, name in futures.items()}
+
+    correlation_features = results["correlation_features"]
+    chi2_features = results["chi2_features"]
+    mi_features = results["mi_features"]
+    lasso_features = results["lasso_features"]
+    aic_features, bic_features = results["aic_bic_features"]
 
     all_selected_features = list(set(correlation_features + 
-                                #  [X.columns[i] for i in chi2_features] + 
-                                 [X.columns[i] for i in mi_features] + 
-                                 [X.columns[i] for i in lasso_features] + 
-                                 aic_features + 
-                                 bic_features))
+                                     [X.columns[i] for i in chi2_features] + 
+                                     [X.columns[i] for i in mi_features] + 
+                                     [X.columns[i] for i in lasso_features] + 
+                                     aic_features + 
+                                     bic_features))
 
     print(f"Selected features: {all_selected_features}")
     print(f"Shape of feature after feature selection:  {len(all_selected_features)}")
-
 
 callingfunc()
