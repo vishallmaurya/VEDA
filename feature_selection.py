@@ -15,36 +15,31 @@ def standardize(df):
     scaled_data = pd.DataFrame(df_scaled, columns=df.columns)
     return scaled_data
 
-# Feature selection with correlation coefficient
-def select_correlation_features(X, y, threshold=0.1):
-    correlation = X.corrwith(y).abs()
-    selected_features = correlation[correlation > threshold].index.tolist()
+def select_correlation_features(X, y, percentile=90):
+    correlations = X.corrwith(y).abs()
+    threshold = np.percentile(correlations, percentile)
+    selected_features = correlations[correlations > threshold].index.tolist()
     return selected_features
 
-# Feature selection with chi-squared test
 def select_chi2_features(X, y, k=10):
-    # Ensure X is non-negative
     X_non_negative = X - X.min().min()
     chi2_selector = SelectKBest(chi2, k=k)
     chi2_selector.fit(X_non_negative, y)
     selected_features = chi2_selector.get_support(indices=True)
     return selected_features
 
-# Feature selection with mutual information
 def select_mi_features(X, y, k=10):
     mi_selector = SelectKBest(mutual_info_classif, k=k)
     mi_selector.fit(X, y)
     selected_features = mi_selector.get_support(indices=True)
     return selected_features
 
-# Feature selection with L1 regularization (Lasso)
 def select_lasso_features(X, y, alpha=0.1):
     lasso = Lasso(alpha=alpha)
     lasso.fit(X, y)
     selected_features = [i for i, coef in enumerate(lasso.coef_) if coef != 0]
     return selected_features
 
-# Feature selection with AIC and BIC
 def select_aic_bic_features(X, y):
     def compute_aic_bic(X, y):
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
