@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from sklearn.feature_selection import chi2, mutual_info_classif, SelectKBest
-from sklearn.linear_model import Lasso
+from sklearn.linear_model import LassoCV, Lasso
 from sklearn.metrics import r2_score
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.preprocessing import StandardScaler
@@ -21,22 +21,66 @@ def select_correlation_features(X, y, percentile=90):
     selected_features = correlations[correlations > threshold].index.tolist()
     return selected_features
 
-def select_chi2_features(X, y, k=10):
+
+def select_optimal_k_chi2(X, y):
+    max_k = X.shape[1]
+
+    X_non_negative = X - X.min().min()
+    chi2_scores, _ = chi2(X_non_negative, y)
+    
+    sorted_indices = np.argsort(chi2_scores)[::-1]
+    sorted_chi2_scores = chi2_scores[sorted_indices]
+    
+    cumulative_chi2_scores = np.cumsum(sorted_chi2_scores)
+    normalized_cumulative_chi2_scores = cumulative_chi2_scores / cumulative_chi2_scores[-1]
+    
+    optimal_k = np.argmax(normalized_cumulative_chi2_scores >= 0.9) + 1
+    optimal_k = min(optimal_k, max_k)
+
+    return optimal_k
+
+
+def select_chi2_features(X, y):
+    k = select_optimal_k_chi2(X, y)
+    
     X_non_negative = X - X.min().min()
     chi2_selector = SelectKBest(chi2, k=k)
     chi2_selector.fit(X_non_negative, y)
     selected_features = chi2_selector.get_support(indices=True)
     return selected_features
 
-def select_mi_features(X, y, k=10):
+
+def select_optimal_k_mi(X, y):
+    max_k = X.shape[1] 
+    mi_scores = mutual_info_classif(X, y)    
+    sorted_indices = np.argsort(mi_scores)[::-1]
+    sorted_mi_scores = mi_scores[sorted_indices]
+    
+    cumulative_mi_scores = np.cumsum(sorted_mi_scores)
+    normalized_cumulative_mi_scores = cumulative_mi_scores / cumulative_mi_scores[-1]
+    optimal_k = np.argmax(normalized_cumulative_mi_scores >= 0.9) + 1
+
+    optimal_k = min(optimal_k, max_k)
+    return optimal_k
+
+
+def select_mi_features(X, y):
+    k = select_optimal_k_mi(X, y)
+
     mi_selector = SelectKBest(mutual_info_classif, k=k)
     mi_selector.fit(X, y)
     selected_features = mi_selector.get_support(indices=True)
     return selected_features
 
-def select_lasso_features(X, y, alpha=0.1):
-    lasso = Lasso(alpha=alpha)
+def select_lasso_features(X, y):
+    lasso_cv = LassoCV(cv=5)
+    lasso_cv.fit(X, y)
+    
+    best_alpha = lasso_cv.alpha_
+    
+    lasso = Lasso(alpha=best_alpha)
     lasso.fit(X, y)
+    
     selected_features = [i for i, coef in enumerate(lasso.coef_) if coef != 0]
     return selected_features
 
