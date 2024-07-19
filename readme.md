@@ -97,3 +97,33 @@ b. Grouping and Aggregation
 7. Hypothesis Testing
     1. Formulate hypotheses: Based on initial observations, formulate hypotheses about the data.
     2. Test hypotheses: Use statistical tests like t-tests, chi-square tests, or ANOVA to validate hypotheses.
+
+
+*** PCA ***
+
+PCA is a powerful tool for dimensionality reduction, but it is not always the best choice. There are several situations where PCA may not be suitable or effective. Here are some cases where PCA should not be applied:
+
+Non-Linear Data:
+
+Example: Data that lies on a non-linear manifold, such as a spiral or a circular pattern.
+Explanation: PCA is a linear method and assumes that the principal components are linear combinations of the original features. For non-linear data, PCA may fail to capture the underlying structure. Non-linear dimensionality reduction techniques like t-SNE, UMAP, or Kernel PCA might be more appropriate in such cases.
+Data Not Centered Around the Origin:
+
+Example: Data with mean values far from zero.
+Explanation: PCA works best when the data is centered around the origin, i.e., the mean of the data is zero. If the data is not centered, the principal components may not accurately capture the directions of maximum variance. Preprocessing steps such as centering the data by subtracting the mean of each feature are essential.
+Equally Distributed Data:
+
+Example: Data where all features have similar variance and no feature dominates.
+Explanation: If the data is equally distributed and there is no clear direction of maximum variance, PCA may not be able to effectively reduce the dimensionality. All components might have similar eigenvalues, making it difficult to identify which components to retain.
+When Interpretability is Important:
+
+Example: Applications where understanding the contribution of each original feature is crucial, such as in medical diagnosis or policy-making.
+Explanation: PCA transforms the original features into a set of uncorrelated principal components, which are linear combinations of the original features. This transformation can make it challenging to interpret the results in terms of the original features.
+When Data is Sparse:
+
+Example: High-dimensional sparse data, such as text data represented by a term-frequency matrix.
+Explanation: PCA may not be the best choice for sparse data because it can result in dense principal components, which may lose the sparsity structure. Techniques like Truncated SVD (also known as LSA in text mining) or non-negative matrix factorization (NMF) might be more suitable.
+Presence of Outliers:
+
+Example: Data with significant outliers that can skew the results.
+Explanation: PCA is sensitive to outliers because it relies on the mean and variance, which can be heavily influenced by extreme values. Robust PCA or other robust dimensionality reduction techniques might be needed in such cases.
