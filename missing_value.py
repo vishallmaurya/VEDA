@@ -325,6 +325,7 @@ def get_data(df, keep='first', min_cat_percent = 5.0,
 def callingfunc():
     df = pd.read_csv('data\data_science_job.csv')
     X = get_data(df.drop('target', axis=1))
+    delete_duplicates(X)
     return X, df['target']
     
 callingfunc()
