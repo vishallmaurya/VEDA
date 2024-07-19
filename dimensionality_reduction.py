@@ -12,6 +12,15 @@ def standardize(df):
     return scaled_data
 
 
+def is_pca_valid(X):
+    chi_square_value, p_value = bartlett(*X.T)
+    if p_value < 0.05:
+        print("Bartlett's test suggests PCA is appropriate.")
+        return True
+    else:
+        print("Bartlett's test suggests PCA may not be appropriate.")
+        return False
+
 def num_components_for_variance(X, variance_threshold=0.95):
     pca = PCA()
     pca.fit(X)
@@ -31,8 +40,10 @@ def apply_pca(X):
 def callingfunc():
     X, y = mv.callingfunc()
     X_scaled_df = standardize(X)
+    
     print(f"Shape of feature before feature selection:  {X.shape}")
-    X_reduced = apply_pca(X_scaled_df)
-    print(f"Shape of feature before feature selection:  {X_reduced.shape}")
+    if(is_pca_valid(X_scaled_df)):
+        X_reduced = apply_pca(X_scaled_df)
+    # print(f"Shape of feature before feature selection:  {X_reduced.shape}")
 
 callingfunc()
