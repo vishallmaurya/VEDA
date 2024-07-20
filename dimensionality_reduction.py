@@ -1,7 +1,7 @@
 from sklearn.preprocessing import StandardScaler
 import missing_value as mv
 from sklearn.decomposition import PCA
-from scipy.stats import bartlett
+from factor_analyzer import calculate_kmo
 import pandas as pd
 import numpy as np
 
@@ -13,35 +13,16 @@ def standardize(df):
 
 
 def is_pca_valid(X):
-    try:
-        chi_square_value, p_value = bartlett(*X.T)
-        if p_value < 0.05:
-            print("Bartlett's test suggests PCA is appropriate.")
-            return True
-        else:
-            print("Bartlett's test suggests PCA may not be appropriate.")
-            return False
-    except Exception as e:
-        print(f"Error in Bartlett's test: {e}")
-        return False
-    
-
-def diagnose_data(X):
-    # Check for identical rows
-    unique_rows = np.unique(X, axis=0)
-    if unique_rows.shape[0] != X.shape[0]:
-        print("Warning: There are identical rows in the dataset.")
-    
-    # Check for multicollinearity
     correlation_matrix = np.corrcoef(X, rowvar=False)
-    high_corr = np.abs(correlation_matrix) > 0.9
-    np.fill_diagonal(high_corr, False)  # Ignore self-correlations
-    if np.any(high_corr):
-        print("Warning: There are highly correlated features in the dataset.")
+    determinant = np.linalg.det(correlation_matrix)
     
-    # Print summary statistics
-    print(f"Data shape: {X.shape}")
-    print(f"Variance of features: {np.var(X, axis=0)}")
+    print(f"Determinant of the correlation matrix: {determinant}")
+    if determinant < 0.01:  # A small determinant suggests multicollinearity
+        print("The determinant of the correlation matrix suggests PCA is appropriate.")
+        return True
+    else:
+        print("The determinant of the correlation matrix suggests PCA may not be appropriate.")
+        return False
 
 
 def num_components_for_variance(X, variance_threshold=0.95):
@@ -65,14 +46,10 @@ def callingfunc():
     print(f"Shape of feature before feature selection:  {X.shape}")
 
     X_scaled_df = standardize(X)
-    
-    print(f"Shape of feature before feature selection:  {X.shape}")
-    diagnose_data(X)
-
-    diagnose_data(X_scaled_df)
-    is_pca_valid(X_scaled_df)
-    # if(is_pca_valid(X_scaled_df)):
-        # X_reduced = apply_pca(X_scaled_df)
-    # print(f"Shape of feature before feature selection:  {X_reduced.shape}")
+    if(is_pca_valid(X_scaled_df)):
+        X_reduced = apply_pca(X_scaled_df)
+    else:
+        pass
+    print(f"Shape of feature before feature selection:  {X_reduced.shape}")
 
 callingfunc()
