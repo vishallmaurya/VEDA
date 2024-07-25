@@ -1,13 +1,14 @@
+import numpy as np
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 import umap
 
 from tensorflow.python.keras.layers import Input, Dense
 from tensorflow.python.keras.models import Model
+from tensorflow.python.keras.callbacks import EarlyStopping
 
 import missing_value as mv
 import pandas as pd
-import numpy as np
 
 
 def standardize(df):
@@ -17,23 +18,60 @@ def standardize(df):
     return scaled_data
 
 
-def build_autoencoder(input_dim, encoding_dim):
+def determine_encoding_dim(X, variance_threshold=0.95, min_dim=10, max_dim=100):
+    pca = PCA(n_components=X.shape[1])
+    pca.fit(X)
+    cumulative_variance = np.cumsum(pca.explained_variance_ratio_)
+    encoding_dim = np.argmax(cumulative_variance >= variance_threshold) + 1
+    encoding_dim = max(min_dim, min(encoding_dim, max_dim))
+    return encoding_dim
+
+
+def determine_epochs(n_samples, min_epochs=20, max_epochs=100):
+    if n_samples < 5000:
+        return min_epochs
+    elif n_samples < 10000:
+        return int(min_epochs + (max_epochs - min_epochs) * (n_samples - 5000) / 5000)
+    else:
+        return max_epochs
+    
+def determine_batch_size(n_samples, min_batch_size=32, max_batch_size=256):
+    if n_samples < 5000:
+        return min_batch_size
+    elif n_samples < 20000:
+        return int(min_batch_size + (max_batch_size - min_batch_size) * (n_samples - 5000) / 15000)
+    else:
+        return max_batch_size
+
+
+def build_autoencoder(input_dim, encoding_dim, hidden_layers=1, optimizer='adam', loss='mean_squared_error'):
     input_layer = Input(shape=(input_dim,))
+    
     encoded = Dense(encoding_dim, activation='relu')(input_layer)
-    decoded = Dense(input_dim, activation='sigmoid')(encoded)
+    x = encoded
+    for _ in range(hidden_layers - 1):
+        x = Dense(encoding_dim // 2, activation='relu')(x)
+    
+    decoded = Dense(input_dim, activation='sigmoid')(x)
     
     autoencoder = Model(input_layer, decoded)
     encoder = Model(input_layer, encoded)
     
-    autoencoder.compile(optimizer='adam', loss='mean_squared_error')
+    autoencoder.compile(optimizer=optimizer, loss=loss)
     return autoencoder, encoder
 
 
-def apply_autoencoder(X, encoding_dim=10, epochs=50, batch_size=256):
+
+def apply_autoencoder(X):
     input_dim = X.shape[1]
+    encoding_dim = determine_encoding_dim(X)
     autoencoder, encoder = build_autoencoder(input_dim, encoding_dim)
     
-    autoencoder.fit(X, X, epochs=epochs, batch_size=batch_size, shuffle=True, verbose=1)
+    epochs = determine_epochs(X.shape[0])
+    batch_size = determine_batch_size(X.shape[0])
+    early_stopping = EarlyStopping(monitor='loss', patience=10, restore_best_weights=True)
+    
+    autoencoder.fit(X, X, epochs=epochs, batch_size=batch_size, shuffle=True, verbose=1, callbacks=[early_stopping])
     
     X_reduced = encoder.predict(X)
     return X_reduced
@@ -91,7 +129,7 @@ def callingfunc():
         if is_pca_valid(X_scaled_df):
             X_reduced = apply_pca(X_scaled_df)
         else:
-            if X_scaled_df.shape[0] <= 10000 and X_scaled_df.shape[1] <= 50:  # Assuming UMAP is better for smaller datasets
+            if X_scaled_df.shape[0] <= 10000 and X_scaled_df.shape[1] <= 50:
                 X_reduced = apply_umap(X_scaled_df)
             else:
                 X_reduced = apply_autoencoder(X_scaled_df)
