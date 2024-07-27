@@ -3,6 +3,8 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 import umap
 
+import os
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 from tensorflow.python.keras.layers import Input, Dense
 from tensorflow.python.keras.models import Model
 from tensorflow.python.keras.callbacks import EarlyStopping
