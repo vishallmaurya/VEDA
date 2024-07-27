@@ -71,12 +71,12 @@ def drop_row_column(df, datalosspercent = 10, min_var = 0.04):
         return
     else:
         limited_null_columns = [var for var in df.columns if df[var].isnull().mean() <= min_var]
-        excessive_null_columns = [var for var in df.columns if df[var].isnull().mean() > min_var]
 
         if len(limited_null_columns) == 0:
             return   
         else:
             new_df = df[limited_null_columns].dropna()
+            excessive_null_columns = [var for var in df.columns if df[var].isnull().mean() > min_var]
             new_df[excessive_null_columns] = df[excessive_null_columns]
 
             change = ((df.shape[0]-new_df.shape[0])/df.shape[0])*100
@@ -326,6 +326,11 @@ def callingfunc():
     df = pd.read_csv('data\data_science_job.csv')
     X = get_data(df.drop('target', axis=1))
     delete_duplicates(X)
-    return X, df['target']
+    X_ind = X.index
+    y_ind = df['target'].index
+    ind = X_ind.intersection(y_ind)
+    y = df.loc[ind, 'target']
+
+    return X, y
     
 callingfunc()
