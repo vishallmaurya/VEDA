@@ -10,21 +10,23 @@ from concurrent.futures import ThreadPoolExecutor
 import missing_value as mv
 
 def standardize(df):
+    """Standardizes the dataframe by scaling features to zero mean and unit variance."""
     scaler = StandardScaler()
     df_scaled = scaler.fit_transform(df)
-    scaled_data = pd.DataFrame(df_scaled, columns=df.columns)
-    return scaled_data
+    return pd.DataFrame(df_scaled, columns=df.columns)
 
 def select_correlation_features(X, y, percentile=90):
+    """Selects features based on correlation with the target variable."""
     correlations = X.corrwith(y).abs()
     threshold = np.percentile(correlations, percentile)
     selected_features = correlations[correlations > threshold].index.tolist()
     return selected_features
 
-
 def select_optimal_k_chi2(X, y):
+    """Selects the optimal number of features based on the chi-squared test."""
     max_k = X.shape[1]
 
+    # Ensure all values in X are non-negative for chi2 test
     X_non_negative = X - X.min().min()
     chi2_scores, _ = chi2(X_non_negative, y)
     
@@ -39,20 +41,22 @@ def select_optimal_k_chi2(X, y):
 
     return optimal_k
 
-
 def select_chi2_features(X, y):
+    """Selects features based on the chi-squared test."""
     k = select_optimal_k_chi2(X, y)
     
+    # Ensure all values in X are non-negative for chi2 test
     X_non_negative = X - X.min().min()
     chi2_selector = SelectKBest(chi2, k=k)
     chi2_selector.fit(X_non_negative, y)
     selected_features = chi2_selector.get_support(indices=True)
     return selected_features
 
-
 def select_optimal_k_mi(X, y):
-    max_k = X.shape[1] 
-    mi_scores = mutual_info_classif(X, y)    
+    """Selects the optimal number of features based on mutual information."""
+    max_k = X.shape[1]
+    mi_scores = mutual_info_classif(X, y)
+    
     sorted_indices = np.argsort(mi_scores)[::-1]
     sorted_mi_scores = mi_scores[sorted_indices]
     
@@ -63,8 +67,8 @@ def select_optimal_k_mi(X, y):
     optimal_k = min(optimal_k, max_k)
     return optimal_k
 
-
 def select_mi_features(X, y):
+    """Selects features based on mutual information."""
     k = select_optimal_k_mi(X, y)
 
     mi_selector = SelectKBest(mutual_info_classif, k=k)
@@ -73,6 +77,7 @@ def select_mi_features(X, y):
     return selected_features
 
 def select_lasso_features(X, y):
+    """Selects features based on Lasso regression."""
     lasso_cv = LassoCV(cv=5)
     lasso_cv.fit(X, y)
     
@@ -85,6 +90,7 @@ def select_lasso_features(X, y):
     return selected_features
 
 def select_aic_bic_features(X, y):
+    """Selects features based on AIC and BIC criteria."""
     def compute_aic_bic(X, y):
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
         X_train_sm = sm.add_constant(X_train)
@@ -130,35 +136,39 @@ def select_aic_bic_features(X, y):
     return best_aic_features, best_bic_features
 
 def callingfunc():
-    X, y = mv.callingfunc()
-    X_scaled_df = standardize(X)
-    print(f"Shape of feature before feature selection:  {X.shape}")
+    """Calls the feature selection functions and prints the selected features."""
+    try:
+        X, y = mv.callingfunc()
+        X_scaled_df = standardize(X)
+        print(f"Shape of feature before feature selection:  {X.shape}")
 
-    # Perform feature selection in parallel
-    with ThreadPoolExecutor() as executor:
-        futures = {
-            executor.submit(select_correlation_features, X, y): "correlation_features",
-            executor.submit(select_chi2_features, X_scaled_df, y): "chi2_features",
-            executor.submit(select_mi_features, X_scaled_df, y): "mi_features",
-            executor.submit(select_lasso_features, X_scaled_df, y): "lasso_features",
-            executor.submit(select_aic_bic_features, X, y): "aic_bic_features"
-        }
-        results = {name: future.result() for future, name in futures.items()}
+        # Perform feature selection in parallel
+        with ThreadPoolExecutor() as executor:
+            futures = {
+                executor.submit(select_correlation_features, X, y): "correlation_features",
+                executor.submit(select_chi2_features, X_scaled_df, y): "chi2_features",
+                executor.submit(select_mi_features, X_scaled_df, y): "mi_features",
+                executor.submit(select_lasso_features, X_scaled_df, y): "lasso_features",
+                executor.submit(select_aic_bic_features, X, y): "aic_bic_features"
+            }
+            results = {name: future.result() for future, name in futures.items()}
 
-    correlation_features = results["correlation_features"]
-    chi2_features = results["chi2_features"]
-    mi_features = results["mi_features"]
-    lasso_features = results["lasso_features"]
-    aic_features, bic_features = results["aic_bic_features"]
+        correlation_features = results["correlation_features"]
+        chi2_features = results["chi2_features"]
+        mi_features = results["mi_features"]
+        lasso_features = results["lasso_features"]
+        aic_features, bic_features = results["aic_bic_features"]
 
-    all_selected_features = list(set(correlation_features + 
-                                     [X.columns[i] for i in chi2_features] + 
-                                     [X.columns[i] for i in mi_features] + 
-                                     [X.columns[i] for i in lasso_features] + 
-                                     aic_features + 
-                                     bic_features))
+        all_selected_features = list(set(correlation_features + 
+                                         [X.columns[i] for i in chi2_features] + 
+                                         [X.columns[i] for i in mi_features] + 
+                                         [X.columns[i] for i in lasso_features] + 
+                                         aic_features + 
+                                         bic_features))
 
-    print(f"Selected features: {all_selected_features}")
-    print(f"Shape of feature after feature selection:  {len(all_selected_features)}")
+        print(f"Selected features: {all_selected_features}")
+        print(f"Shape of feature after feature selection:  {len(all_selected_features)}")
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
 callingfunc()
