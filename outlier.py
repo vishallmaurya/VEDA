@@ -38,11 +38,11 @@ def is_normal_distribution(data, minlen = 5000, tests = ['skew-kurtosis']):
             raise ValueError(f"Invalid test. did you want to write {test_list}")
 
     # Early exit if sample size is too large for Shapiro-Wilk (recommended max is 5000)
-    if (len(data) < minlen) or ('shaprio' in tests):
-        # Shapiro-Wilk Test
+    if (len(data) < minlen) and ('shapiro' in tests):
         shapiro_stat, shapiro_p_value = shapiro(data)
         if shapiro_p_value <= 0.05:
             return False
+
 
     # Skewness and Kurtosis Check
 
@@ -117,7 +117,7 @@ def get_outliermethod_params(methodname):
 
 
 
-def handle_outliers(data, tests = ['skew-kurtosis'], method = 'default', handle = "capping"):
+def handle_outliers(data, y, tests = ['skew-kurtosis'], method = 'default', handle = "capping"):
     
     """
         error handling
@@ -168,7 +168,8 @@ def handle_outliers(data, tests = ['skew-kurtosis'], method = 'default', handle 
         outlier = iso_forest.fit_predict(data)
         outliers = data[outlier == -1]
         cleaned_data = data[outlier != -1]
-        return outliers, cleaned_data
+        cleaned_y = y.iloc[outlier != -1]
+        return outliers, cleaned_data, cleaned_y
 
     if method == 'default':
         k = 20
@@ -189,11 +190,13 @@ def handle_outliers(data, tests = ['skew-kurtosis'], method = 'default', handle 
         y_pred = lof.fit_predict(data)
         outliers = data[y_pred == -1]
         cleaned_data = data[y_pred != -1]
-        return outliers, cleaned_data
+        cleaned_y = data[y_pred != -1]
+        return outliers, cleaned_data, cleaned_y
 
     if method == 'default':
         outliers = pd.DataFrame(columns=data.columns)
         cleaned_data = data.copy()
+        cleaned_y = y.copy()
         outlier_indices = []
         for column in data.columns:
             if is_normal_distribution(data[column]):
@@ -215,12 +218,17 @@ def handle_outliers(data, tests = ['skew-kurtosis'], method = 'default', handle 
             outlier_indices.extend(data.index[(data[column] > upper_limit) | (data[column] < lower_limit)])
         
         outliers = data.iloc[outlier_indices]
+        cleaned_y.drop(outliers.index, inplace=True)
         cleaned_data.drop(outliers.index, inplace=True)
-        return outliers, cleaned_data
+        return outliers, cleaned_data, cleaned_y
     
 def callingfun():
     data = pd.read_csv('data\placement.csv')
-    outliers, cleaned = handle_outliers(data.drop(['placed'], axis=1))
-    return outliers, cleaned
+    outliers, cleaned_x, cleaned_y = handle_outliers(data.drop(['placed'], axis=1), data['placed'])
+    print("data size: ", data.shape)
+    print("outlier size: ", outliers.shape)
+    print("cleaned_x size: ", cleaned_x.shape)
+    print("cleaned_y size: ", cleaned_y.shape)
+    return outliers, cleaned_x, cleaned_y
 
 callingfun()
