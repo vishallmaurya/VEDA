@@ -322,15 +322,10 @@ def get_data(df, keep='first', min_cat_percent = 5.0,
     function ended
 """
 
-def callingfunc():
-    df = pd.read_csv('data\data_science_job.csv')
-    X = get_data(df.drop('target', axis=1))
+def callingfunc(X, y):
+    X = get_data(X)
     delete_duplicates(X)
-    X_ind = X.index
-    y_ind = df['target'].index
-    ind = X_ind.intersection(y_ind)
-    y = df.loc[ind, 'target']
+    y = y.iloc[X.index]
 
     return X, y
     
-callingfunc()
