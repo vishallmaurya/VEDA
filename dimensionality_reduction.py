@@ -9,7 +9,6 @@ from tensorflow.python.keras.layers import Input, Dense
 from tensorflow.python.keras.models import Model
 from tensorflow.python.keras.callbacks import EarlyStopping
 
-import missing_value as mv
 import pandas as pd
 
 
@@ -122,23 +121,20 @@ def apply_umap(X):
     return X_reduced
 
 
-def callingfunc():
+def callingfunc(X, y):
     try:
-        X, y = mv.callingfunc()
         X_scaled_df = standardize(X)
         print(f"Shape of feature before feature selection:  {X.shape}")
         
         if is_pca_valid(X_scaled_df):
             X_reduced = apply_pca(X_scaled_df)
+            return X_reduced, y
         else:
             if X_scaled_df.shape[0] <= 10000 and X_scaled_df.shape[1] <= 50:
                 X_reduced = apply_umap(X_scaled_df)
             else:
                 X_reduced = apply_autoencoder(X_scaled_df)
-        
+            return X_reduced, y
         print(f"Shape of feature after reduction: {X_reduced.shape}")
     except Exception as e:
         print(f"An error occurred: {e}")
-
-
-callingfunc()
