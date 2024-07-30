@@ -5,6 +5,9 @@ from sklearn.ensemble import IsolationForest
 from sklearn.neighbors import LocalOutlierFactor, NearestNeighbors
 from sklearn.cluster import DBSCAN
 from math import sqrt
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import f1_score
+import optuna
 from diptest import diptest
 
 
@@ -107,6 +110,44 @@ def get_outliermethod_params(methodname):
         return None
 
 
+
+def objective(trial, X):
+    contamination = trial.suggest_float('contamination', 0.01, 0.1)
+    n_estimators = trial.suggest_int('n_estimators', 50, 300)
+    max_samples = trial.suggest_int('max_samples', 1, len(X))
+    random_state = 42
+
+    # Split the data for evaluation
+    X_train, X_val = train_test_split(X, test_size=0.2, random_state=random_state)
+
+    # Initialize and train the IsolationForest
+    iso_forest = IsolationForest(
+        contamination=contamination,
+        n_estimators=n_estimators,
+        max_samples=max_samples,
+        random_state=random_state
+    )
+    iso_forest.fit(X_train)
+    
+    # Predict on validation set
+    y_pred = iso_forest.predict(X_val)
+    y_true = np.ones_like(y_pred)
+    y_true[y_pred == -1] = -1  # Assume that detected outliers are the minority class
+    
+    return f1_score(y_true, y_pred)
+
+
+
+def tune_isolation_forest_params_with_optuna(X):
+    study = optuna.create_study(direction='maximize')
+    study.optimize(lambda trial: objective(trial, X), n_trials=100)
+    
+    best_params = study.best_params
+    best_estimator = IsolationForest(**best_params, random_state=42)
+    return best_estimator
+
+
+
 """
     parameters:
         data: data should be of pandas dataframe object and should consist of numerical data only, if not get converted into series object.
@@ -163,9 +204,8 @@ def handle_outliers(data, y, tests = ['skew-kurtosis'], method = 'default', hand
         error handling finishes here
     """
 
-    if (method == 'default' and data.shape[0] >= 10000) or (method == 'isolation-forest'):
-        max_samples = min(int(sqrt(len(data))), len(data))
-        iso_forest = IsolationForest(contamination=0.03, n_estimators=200, max_samples=max_samples)
+    if (method == 'default' and data.shape[0] >= 10000) or (method == 'isolation-forest'):        
+        iso_forest = tune_isolation_forest_params_with_optuna(data)
         outlier = iso_forest.fit_predict(data)
         outliers = data[outlier == -1]
         cleaned_data = data[outlier != -1]
@@ -173,7 +213,7 @@ def handle_outliers(data, y, tests = ['skew-kurtosis'], method = 'default', hand
         return outliers, cleaned_data, cleaned_y
 
     if method == 'default':
-        k = 20
+        k = int(sqrt(len(data)))
         variance_threshold = 0.05
         dip_p_value_threshold = 0.05
 
