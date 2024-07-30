@@ -218,10 +218,9 @@ def handle_outliers(data, tests = ['skew-kurtosis'], method = 'default', handle 
         cleaned_data.drop(outliers.index, inplace=True)
         return outliers, cleaned_data
     
-data = pd.read_csv('data\placement.csv')
-outliers, cleaned = handle_outliers(data.drop(['placed'], axis=1))
-print("Original data shape: ", data.shape)
-print("outlier data shape: ", outliers.shape)
-print("Cleaned data shape: ", cleaned.shape)
-print("Original data shape: ", (data.shape[0]-cleaned.shape[0])/data.shape[0])
+def callingfun():
+    data = pd.read_csv('data\placement.csv')
+    outliers, cleaned = handle_outliers(data.drop(['placed'], axis=1))
+    return outliers, cleaned
 
+callingfun()
