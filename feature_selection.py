@@ -135,10 +135,9 @@ def select_aic_bic_features(X, y):
             
     return best_aic_features, best_bic_features
 
-def callingfunc():
+def callingfunc(X, y):
     """Calls the feature selection functions and prints the selected features."""
     try:
-        X, y = mv.callingfunc()
         X_scaled_df = standardize(X)
         print(f"Shape of feature before feature selection:  {X.shape}")
 
@@ -166,9 +165,9 @@ def callingfunc():
                                          aic_features + 
                                          bic_features))
 
+        X = X[all_selected_features]
         print(f"Selected features: {all_selected_features}")
         print(f"Shape of feature after feature selection:  {len(all_selected_features)}")
     except Exception as e:
         print(f"An error occurred: {e}")
-
-callingfunc()
+    return X, y
