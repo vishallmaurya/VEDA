@@ -164,7 +164,8 @@ def handle_outliers(data, y, tests = ['skew-kurtosis'], method = 'default', hand
     """
 
     if (method == 'default' and data.shape[0] >= 10000) or (method == 'isolation-forest'):
-        iso_forest = IsolationForest(contamination=0.03, n_estimators=200, max_samples=sqrt(len(data)))
+        max_samples = min(int(sqrt(len(data))), len(data))
+        iso_forest = IsolationForest(contamination=0.03, n_estimators=200, max_samples=max_samples)
         outlier = iso_forest.fit_predict(data)
         outliers = data[outlier == -1]
         cleaned_data = data[outlier != -1]
@@ -222,13 +223,12 @@ def handle_outliers(data, y, tests = ['skew-kurtosis'], method = 'default', hand
         cleaned_data.drop(outliers.index, inplace=True)
         return outliers, cleaned_data, cleaned_y
     
-def callingfun():
-    data = pd.read_csv('data\placement.csv')
-    outliers, cleaned_x, cleaned_y = handle_outliers(data.drop(['placed'], axis=1), data['placed'])
-    print("data size: ", data.shape)
+def callingfun(X, y):
+    # data = pd.read_csv('data\placement.csv')
+    # outliers, cleaned_x, cleaned_y = handle_outliers(data.drop(['placed'], axis=1), data['placed'])
+    outliers, cleaned_x, cleaned_y = handle_outliers(X, y)
+    print("data size: ", X.shape)
     print("outlier size: ", outliers.shape)
     print("cleaned_x size: ", cleaned_x.shape)
     print("cleaned_y size: ", cleaned_y.shape)
     return outliers, cleaned_x, cleaned_y
-
-callingfun()
