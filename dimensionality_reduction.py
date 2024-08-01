@@ -137,9 +137,7 @@ def apply_umap(X, prioritize_reproducibility=True):
 
 def callingfunc(X, y):
     try:
-        X_scaled_df = standardize(X)
-        print(f"Shape of feature before feature selection:  {X.shape}")
-        
+        X_scaled_df = standardize(X)        
         if is_pca_valid(X_scaled_df):
             X_reduced = apply_pca(X_scaled_df)
             return X_reduced, y
