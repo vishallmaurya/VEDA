@@ -1,3 +1,4 @@
+import traceback
 import pandas as pd
 import numpy as np
 from sklearn.feature_selection import chi2, mutual_info_classif, SelectKBest
@@ -29,9 +30,22 @@ def select_correlation_features(X, y, percentile=90):
     if not (0 <= percentile <= 100):
         raise ValueError("Percentile must be between 0 and 100.")
     
+    if X.empty:
+        raise ValueError("X is empty. It must contain at least one feature.")
+
+    if y.empty:
+        raise ValueError("y is empty. It must contain at least one value.")
+
     correlations = X.corrwith(y).abs()
+
+    if correlations.isna().all():
+        raise ValueError("All correlation values are NaN.")
+    if (correlations == 0).all():
+        raise ValueError("All features have zero correlation with the target.")
+
     threshold = np.percentile(correlations, percentile)
     selected_features = correlations[correlations > threshold].index.tolist()
+    
     return selected_features
 
 
@@ -53,20 +67,29 @@ def select_optimal_k_mi(X, y):
     if X.shape[1] == 0:
         raise ValueError("X must have at least one feature.")
 
-    max_k = X.shape[1]
-    mi_scores = mutual_info_classif(X, y)
+    if X.size == 0 or y.size == 0:
+        raise ValueError("X and y must not be empty.")
+
+    try:
+        mi_scores = mutual_info_classif(X, y)
+    except Exception as e:
+        raise RuntimeError(f"Failed to calculate mutual information scores: {e}")
     
+    # Ensure the length of mi_scores matches the number of features in X
     if len(mi_scores) != X.shape[1]:
         raise RuntimeError("Mismatch between number of features and mutual information scores computed.")
 
+    # Sort the mutual information scores and calculate the optimal number of features
     sorted_indices = np.argsort(mi_scores)[::-1]
     sorted_mi_scores = mi_scores[sorted_indices]
     
     cumulative_mi_scores = np.cumsum(sorted_mi_scores)
     normalized_cumulative_mi_scores = cumulative_mi_scores / cumulative_mi_scores[-1]
+    
+    # Determine the optimal k, ensuring it does not exceed the maximum number of features
     optimal_k = np.argmax(normalized_cumulative_mi_scores >= 0.9) + 1
-
-    optimal_k = min(optimal_k, max_k)
+    optimal_k = min(optimal_k, X.shape[1])
+    
     return optimal_k
 
 def select_mi_features(X, y):
@@ -95,6 +118,14 @@ def select_lasso_features(X, y):
     
     if X.shape[1] == 0:
         raise ValueError("X must have at least one feature.")
+
+    if np.any(np.isnan(X)) or np.any(np.isnan(y)):
+        raise ValueError("X and y must not contain NaN values.")
+    if np.any(np.isinf(X)) or np.any(np.isinf(y)):
+        raise ValueError("X and y must not contain infinite values.")
+
+    if y.ndim != 1:
+        raise ValueError("y must be a 1D array or Series.")
 
     try:
         lasso_cv = LassoCV(cv=5)
@@ -155,8 +186,11 @@ def select_aic_bic_features(X, y):
             
             return aic, bic, r2
         
+        except ValueError as ve:
+            raise ValueError(f"Value error during model fitting or evaluation: {ve}")
         except Exception as e:
-            raise RuntimeError(f"An error occurred during model fitting or evaluation: {e}")
+            raise RuntimeError(f"An unexpected error occurred during model fitting or evaluation: {e}")
+
     
     # Initial feature set
     best_aic_features = list(range(X.shape[1]))
@@ -198,8 +232,11 @@ def select_aic_bic_features(X, y):
                 raise RuntimeError(f"An error occurred while computing BIC for feature subsets: {e}")
     
     # Convert indices back to feature names if necessary
-    best_aic_features = [feature_names[i] for i in best_aic_features]
-    best_bic_features = [feature_names[i] for i in best_bic_features]
+    try:
+        best_aic_features = [feature_names[i] for i in best_aic_features]
+        best_bic_features = [feature_names[i] for i in best_bic_features]
+    except IndexError as ie:
+        raise IndexError(f"Index error when converting feature indices to names: {ie}")
 
     return best_aic_features, best_bic_features
 
@@ -208,7 +245,7 @@ def callingfunc(X, y):
     """Calls the feature selection functions and prints the selected features."""
     try:
         if not isinstance(y, pd.Series):
-            y = pd.Series(y)
+            raise TypeError("y must be a pandas Series.")
 
         X_scaled_df = standardize(X)
         print(f"Shape of feature before feature selection:  {X.shape}")
@@ -239,4 +276,5 @@ def callingfunc(X, y):
         print(f"Shape of feature after feature selection:  {len(all_selected_features)}")
     except Exception as e:
         print(f"An error occurred: {e}")
+        traceback.print_exc()
     return X, y
