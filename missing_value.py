@@ -330,7 +330,7 @@ def callingfunc(X, y):
     if pd.api.types.is_object_dtype(y):
         labelencoder = LabelEncoder()
         y = labelencoder.fit_transform(y)
-        y = pd.DataFrame(y, columns=['target'])
+        y = pd.Series(y)
     y = y.iloc[X.index]
 
     return X, y
