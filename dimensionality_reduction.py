@@ -115,9 +115,22 @@ def determine_umap_params(X, min_neighbors=5, max_neighbors=50):
     return n_components, n_neighbors, min_dist
 
 
-def apply_umap(X):
+def apply_umap(X, prioritize_reproducibility=True):
     n_components, n_neighbors, min_dist = determine_umap_params(X)
-    reducer = umap.UMAP(n_components=n_components, n_neighbors=n_neighbors, min_dist=min_dist, random_state=42)
+    
+    if prioritize_reproducibility:
+        reducer = umap.UMAP(n_components=n_components, 
+                            n_neighbors=n_neighbors, 
+                            min_dist=min_dist, 
+                            random_state=42, 
+                            n_jobs=1)  # Ensures reproducibility
+    else:
+        reducer = umap.UMAP(n_components=n_components, 
+                            n_neighbors=n_neighbors, 
+                            min_dist=min_dist, 
+                            random_state=None,  # No seed for parallelism
+                            n_jobs=-1)  # Use all available cores for speed
+
     X_reduced = reducer.fit_transform(X)
     return X_reduced
 
