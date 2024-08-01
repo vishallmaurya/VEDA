@@ -210,6 +210,7 @@ def handle_outliers(data, y, tests = ['skew-kurtosis'], method = 'default', hand
         outliers = data[outlier == -1]
         cleaned_data = data[outlier != -1]
         cleaned_y = y.iloc[outlier != -1]
+        print("in line 213: ", type(y))
         return outliers, cleaned_data, cleaned_y
 
     if method == 'default':
@@ -232,6 +233,8 @@ def handle_outliers(data, y, tests = ['skew-kurtosis'], method = 'default', hand
         outliers = data[y_pred == -1]
         cleaned_data = data[y_pred != -1]
         cleaned_y = data[y_pred != -1]
+        print("in line 236: ", type(y))
+
         return outliers, cleaned_data, cleaned_y
 
     if method == 'default':
@@ -257,18 +260,27 @@ def handle_outliers(data, y, tests = ['skew-kurtosis'], method = 'default', hand
                 lower_limit = q25 - 1.5 * iqr
 
             outlier_indices.extend(data.index[(data[column] > upper_limit) | (data[column] < lower_limit)])
+
+        outlier_indices = list(set(outlier_indices)) 
+        outlier_indices = [i for i in outlier_indices if 0 <= i < len(data)] 
+
+        if outlier_indices:
+            outliers = data.iloc[outlier_indices]
+            cleaned_y.drop(outliers.index, inplace=True)
+            cleaned_data.drop(outliers.index, inplace=True)
+        else:
+            outliers = pd.DataFrame(columns=data.columns)
         
-        outliers = data.iloc[outlier_indices]
-        cleaned_y.drop(outliers.index, inplace=True)
-        cleaned_data.drop(outliers.index, inplace=True)
+        print("274:   ", type(cleaned_y))
+
         return outliers, cleaned_data, cleaned_y
     
 def callingfun(X, y):
-    # data = pd.read_csv('data\placement.csv')
-    # outliers, cleaned_x, cleaned_y = handle_outliers(data.drop(['placed'], axis=1), data['placed'])
     outliers, cleaned_x, cleaned_y = handle_outliers(X, y)
     print("data size: ", X.shape)
     print("outlier size: ", outliers.shape)
     print("cleaned_x size: ", cleaned_x.shape)
     print("cleaned_y size: ", cleaned_y.shape)
+    print("ok after getting :  ", type(cleaned_y))
+
     return outliers, cleaned_x, cleaned_y
