@@ -225,6 +225,8 @@ def multivariate_impute(df, n_neighbors = 5):
     category_type = ['object', 'category', 'string', 'interval', 'bool']
     null_category_columns = [col for col in df.columns if (df[col].isnull().sum() > 0) and (df[col].dtype in category_type)]
 
+    df.replace([np.inf, -np.inf], np.nan, inplace=True)
+
     if len(null_numeric_columns) > 0:
         knn = KNNImputer()
         df[null_numeric_columns] = knn.fit_transform(df[null_numeric_columns])
@@ -312,7 +314,7 @@ def get_data(df, keep='first', min_cat_percent = 5.0,
         ('drop_null', drop_row_column(df)),
         ('univariate_imputation', impute_row_column(df, numerical_column = [], categorical_column = [], temporal_column = [])),
         ('multivariate_imputation', multivariate_impute(df)),
-        ('label_encoding' , one_hot_labelencoder(df,columns=[]))
+        ('label_encoding' , one_hot_labelencoder(df,columns=[])),
     ])
 
     data = pipe.fit_transform(df)
@@ -325,6 +327,10 @@ def get_data(df, keep='first', min_cat_percent = 5.0,
 def callingfunc(X, y):
     X = get_data(X)
     delete_duplicates(X)
+    if pd.api.types.is_object_dtype(y):
+        labelencoder = LabelEncoder()
+        y = labelencoder.fit_transform(y)
+        y = pd.DataFrame(y, columns=['target'])
     y = y.iloc[X.index]
 
     return X, y
