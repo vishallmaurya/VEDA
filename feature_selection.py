@@ -120,6 +120,7 @@ def select_lasso_features(X, y):
 def select_aic_bic_features(X, y):
     """Selects features based on AIC and BIC criteria."""
     
+    # Input validation
     if not isinstance(X, (pd.DataFrame, np.ndarray)):
         raise TypeError("X must be a pandas DataFrame or a numpy ndarray.")
     
@@ -130,78 +131,84 @@ def select_aic_bic_features(X, y):
         raise ValueError("The number of samples in X and y must be the same.")
     
     if isinstance(X, pd.DataFrame):
-        initial_features = X.columns.tolist()
+        feature_names = X.columns.tolist()
     else:
-        initial_features = [f'feature_{i}' for i in range(X.shape[1])]
+        feature_names = [f'feature_{i}' for i in range(X.shape[1])]
     
+    # Convert DataFrame to ndarray if necessary
     X = np.array(X) if isinstance(X, pd.DataFrame) else X
     
-    def compute_aic_bic(X, y):
+    def compute_aic_bic(X_subset, y):
         try:
+            # Ensure y is a Series for compatibility with statsmodels
             if isinstance(y, np.ndarray):
                 y = pd.Series(y)
             
-            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+            # Split data
+            X_train, X_test, y_train, y_test = train_test_split(X_subset, y, test_size=0.3, random_state=42)
             
-            X_train_sm = sm.add_constant(X_train)
-            X_test_sm = sm.add_constant(X_test)
-            
-            model = sm.OLS(y_train, X_train_sm).fit()
-            
-            predictions = model.predict(X_test_sm)
-            aic = model.aic
-            bic = model.bic
+            # Fit model and compute metrics
+            model = sm.OLS(y_train, sm.add_constant(X_train)).fit()
+            predictions = model.predict(sm.add_constant(X_test))
+            aic, bic = model.aic, model.bic
             r2 = r2_score(y_test, predictions)
             
-            return aic, bic, model, r2
+            return aic, bic, r2
         
         except Exception as e:
             raise RuntimeError(f"An error occurred during model fitting or evaluation: {e}")
     
-    best_aic_features = initial_features[:]
-    best_bic_features = initial_features[:]
+    # Initial feature set
+    best_aic_features = list(range(X.shape[1]))
+    best_bic_features = best_aic_features.copy()
     
     try:
-        best_aic, _, _, best_aic_score = compute_aic_bic(X[best_aic_features], y)
-        _, best_bic, _, best_bic_score = compute_aic_bic(X[best_bic_features], y)
+        best_aic, best_bic, _ = compute_aic_bic(X[:, best_aic_features], y)
     except Exception as e:
         raise RuntimeError(f"An error occurred while computing initial AIC/BIC: {e}")
     
-    while True:
+    # Feature selection loop
+    improved = True
+    while improved:
         improved = False
-        for feature in initial_features:
-            temp_aic_features = best_aic_features[:]
-            temp_bic_features = best_bic_features[:]
+        for feature in best_aic_features.copy():
+            temp_aic_features = best_aic_features.copy()
+            temp_aic_features.remove(feature)
             
-            if feature in temp_aic_features:
-                temp_aic_features.remove(feature)
-            if feature in temp_bic_features:
-                temp_bic_features.remove(feature)
-                
             try:
-                current_aic, _, _, _ = compute_aic_bic(X[temp_aic_features], y)
-                _, current_bic, _, _ = compute_aic_bic(X[temp_bic_features], y)
+                current_aic, _, _ = compute_aic_bic(X[:, temp_aic_features], y)
+                if current_aic < best_aic:
+                    best_aic = current_aic
+                    best_aic_features = temp_aic_features
+                    improved = True
             except Exception as e:
-                raise RuntimeError(f"An error occurred while computing AIC/BIC for feature subsets: {e}")
-            
-            if current_aic < best_aic:
-                best_aic, best_aic_features, _, _ = current_aic, temp_aic_features, _, _
-                improved = True
-                
-            if current_bic < best_bic:
-                best_bic, best_bic_features, _, _ = current_bic, temp_bic_features, _, _
-                improved = True
+                raise RuntimeError(f"An error occurred while computing AIC for feature subsets: {e}")
         
-        if not improved:
-            break
+        for feature in best_bic_features.copy():
+            temp_bic_features = best_bic_features.copy()
+            temp_bic_features.remove(feature)
             
+            try:
+                _, current_bic, _ = compute_aic_bic(X[:, temp_bic_features], y)
+                if current_bic < best_bic:
+                    best_bic = current_bic
+                    best_bic_features = temp_bic_features
+                    improved = True
+            except Exception as e:
+                raise RuntimeError(f"An error occurred while computing BIC for feature subsets: {e}")
+    
+    # Convert indices back to feature names if necessary
+    best_aic_features = [feature_names[i] for i in best_aic_features]
+    best_bic_features = [feature_names[i] for i in best_bic_features]
+
     return best_aic_features, best_bic_features
 
 
 def callingfunc(X, y):
     """Calls the feature selection functions and prints the selected features."""
     try:
-        # y = y.values.ravel()
+        if not isinstance(y, pd.Series):
+            y = pd.Series(y)
 
         X_scaled_df = standardize(X)
         print(f"Shape of feature before feature selection:  {X.shape}")
