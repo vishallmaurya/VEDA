@@ -92,6 +92,9 @@ def select_lasso_features(X, y):
 def select_aic_bic_features(X, y):
     """Selects features based on AIC and BIC criteria."""
     def compute_aic_bic(X, y):
+        if isinstance(y, np.ndarray):
+            y = pd.Series(y)
+
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
         X_train_sm = sm.add_constant(X_train)
         X_test_sm = sm.add_constant(X_test)
@@ -138,6 +141,8 @@ def select_aic_bic_features(X, y):
 def callingfunc(X, y):
     """Calls the feature selection functions and prints the selected features."""
     try:
+        y = y.values.ravel()
+
         X_scaled_df = standardize(X)
         print(f"Shape of feature before feature selection:  {X.shape}")
 
