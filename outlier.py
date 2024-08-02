@@ -210,7 +210,6 @@ def handle_outliers(data, y, tests = ['skew-kurtosis'], method = 'default', hand
         outliers = data[outlier == -1]
         cleaned_data = data[outlier != -1]
         cleaned_y = y.iloc[outlier != -1]
-        print("in line 213: ", type(y))
         return outliers, cleaned_data, cleaned_y
 
     if method == 'default':
@@ -232,8 +231,7 @@ def handle_outliers(data, y, tests = ['skew-kurtosis'], method = 'default', hand
         y_pred = lof.fit_predict(data)
         outliers = data[y_pred == -1]
         cleaned_data = data[y_pred != -1]
-        cleaned_y = data[y_pred != -1]
-        print("in line 236: ", type(y))
+        cleaned_y = y.iloc[y_pred != -1]
 
         return outliers, cleaned_data, cleaned_y
 
@@ -270,14 +268,13 @@ def handle_outliers(data, y, tests = ['skew-kurtosis'], method = 'default', hand
             cleaned_data.drop(outliers.index, inplace=True)
         else:
             outliers = pd.DataFrame(columns=data.columns)
-        
-        print("274:   ", type(cleaned_y))
 
         return outliers, cleaned_data, cleaned_y
     
 def callingfun(X, y):
     outliers, cleaned_x, cleaned_y = handle_outliers(X, y)
     print("data size: ", X.shape)
+    print("y size and type: ", y.size, " and ", type(y))
     print("outlier size: ", outliers.shape)
     print("cleaned_x size: ", cleaned_x.shape)
     print("cleaned_y size: ", cleaned_y.shape)
