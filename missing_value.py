@@ -183,7 +183,7 @@ def impute_row_column(df, min_var = 0.04, var_diff = 0.05, mod_diff = 0.05, nume
             
             for i in range(len(categorical_column)):
                 values = df[categorical_column[i]].value_counts().sort_values(ascending=False)
-                if values.iloc[1]/values.iloc[0] > mod_diff:
+                if len(values) > 1 and values.iloc[1]/values.iloc[0] > mod_diff:
                     continue
                 else:
                     new_data[categorical_column[i]] = mode[:, i]
