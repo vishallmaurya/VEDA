@@ -139,9 +139,14 @@ def objective(trial, X):
 
 
 def tune_isolation_forest_params_with_optuna(X):
-    study = optuna.create_study(direction='maximize')
+    # study = optuna.create_study(direction='maximize')
+    # study.optimize(lambda trial: objective(trial, X), n_trials=100)
+    study = optuna.create_study(direction='maximize', 
+                            pruner=optuna.pruners.MedianPruner(n_warmup_steps=10))
     study.optimize(lambda trial: objective(trial, X), n_trials=100)
-    
+
+
+
     best_params = study.best_params
     best_estimator = IsolationForest(**best_params, random_state=42)
     return best_estimator
