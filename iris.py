@@ -7,9 +7,9 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 
-df = pd.read_csv('data\Student_performance_data _.csv')
-X = df.drop('GradeClass', axis=1)
-y=df['GradeClass']
+df = pd.read_csv('data\\nearest-earth-objects(1910-2024).csv')
+X = df.drop('is_hazardous', axis=1)
+y=df['is_hazardous']
 
 print("Initial shape:  ", X.shape, " and ", y.shape, " and ", type(y))
 
