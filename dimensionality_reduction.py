@@ -95,11 +95,14 @@ def num_components_for_variance(X, variance_threshold=0.95):
     
     cumulative_variance = np.cumsum(pca.explained_variance_ratio_)
     num_components = np.argmax(cumulative_variance >= variance_threshold) + 1
-    return num_components
+
+    if num_components < 30:
+        return True, num_components  # Indicate that reduction is not needed and return the number of components
+    else:
+        return False, num_components
 
 
-def apply_pca(X):
-    num_components = num_components_for_variance(X)
+def apply_pca(X, num_components):
     pca = PCA(n_components=num_components)
     
     X_reduced = pca.fit_transform(X)
@@ -137,6 +140,12 @@ def apply_umap(X, prioritize_reproducibility=True):
 
 def callingfunc(X, y):
     try:
+        skip, num_components = num_components_for_variance(X)
+
+        if(skip or X.shape[1] < 30):
+            return X, y
+
+        
         X_scaled_df = standardize(X)        
         if is_pca_valid(X_scaled_df):
             X_reduced = apply_pca(X_scaled_df)
@@ -147,6 +156,5 @@ def callingfunc(X, y):
             else:
                 X_reduced = apply_autoencoder(X_scaled_df)
             return X_reduced, y
-        print(f"Shape of feature after reduction: {X_reduced.shape}")
     except Exception as e:
         print(f"An error occurred: {e}")
