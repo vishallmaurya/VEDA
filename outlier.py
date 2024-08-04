@@ -137,15 +137,20 @@ def objective(trial, X):
     return f1_score(y_true, y_pred)
 
 
+def calculate_optimal_trials(dataset_size):
+    if dataset_size < 1000:
+        return 100
+    elif dataset_size < 10000:
+        return 65
+    elif dataset_size < 100000:
+        return 40
+    else:
+        return 20
+
 
 def tune_isolation_forest_params_with_optuna(X):
-    # study = optuna.create_study(direction='maximize')
-    # study.optimize(lambda trial: objective(trial, X), n_trials=100)
-    study = optuna.create_study(direction='maximize', 
-                            pruner=optuna.pruners.MedianPruner(n_warmup_steps=10))
-    study.optimize(lambda trial: objective(trial, X), n_trials=100)
-
-
+    study = optuna.create_study(direction='maximize')
+    study.optimize(lambda trial: objective(trial, X), n_trials=calculate_optimal_trials(len(X)))
 
     best_params = study.best_params
     best_estimator = IsolationForest(**best_params, random_state=42)
