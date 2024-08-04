@@ -256,3 +256,21 @@ Testing: Write unit tests to ensure code correctness and robustness.
 By addressing these points, the code can be made more robust, efficient, and adaptable to different datasets and use cases.
 
 Would you like to focus on a specific part of the code for deeper analysis or potential improvements?
+
+Results:
+
+1. kaggle file output: 78.4546
+   VEDA output: 78.1256
+2. Kaggle file output: 98.314
+   VEDA output: 98.156
+3. Kaggle file output: 89.656
+   VEDA output: 88.9878
+4. Kaggle file output: 97.61   https://www.kaggle.com/datasets/humairmunir/anaemia-prediction/data 
+   VEDA output: 100
+5. Kaggle file output: 85      https://www.kaggle.com/datasets/sohaibmoradi/almond-types-classification/data
+   VEDA output: 79
+
+6. kaggle file output: 94      https://www.kaggle.com/datasets/rabieelkharoua/alzheimers-disease-dataset/data
+   VEDA output: 73
+
+7. kaggle file output: 
