@@ -6,19 +6,24 @@ import outlier as out
 import pandas as pd
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score,classification_report, confusion_matrix
+from sklearn.metrics import accuracy_score, recall_score, precision_score, f1_score,classification_report, confusion_matrix
 from sklearn.linear_model import LogisticRegression
 import numpy as np
 from sklearn.model_selection import StratifiedKFold
 from sklearn.tree import DecisionTreeClassifier 
 from sklearn.ensemble import RandomForestRegressor, VotingRegressor, RandomForestClassifier, VotingClassifier
-# from lightgbm import LGBMRegressor, LGBMClassifier
-# from xgboost import XGBRegressor, XGBClassifier
-# from catboost import CatBoostRegressor, CatBoostClassifier
+from sklearn.ensemble import (ExtraTreesClassifier, 
+                              GradientBoostingClassifier, 
+                              HistGradientBoostingClassifier)
+from lightgbm import LGBMRegressor, LGBMClassifier
+from xgboost import XGBRegressor, XGBClassifier
+from catboost import CatBoostRegressor, CatBoostClassifier
+from sklearn.metrics import (balanced_accuracy_score as bas, 
+                             confusion_matrix)
 
-df = pd.read_csv('data\campaign_data.csv')
-y = df['IsSuccessful']
-X = df.drop('IsSuccessful', axis=1)
+df = pd.read_csv('data\customer_purchase_data.csv')
+y = df['PurchaseStatus']
+X = df.drop('PurchaseStatus', axis=1)
 
 print("Initial shape:  ", X.shape, " and ", y.shape, " and ", type(y))
 
@@ -51,12 +56,14 @@ if(strategy == 'ensemble'):
     print("Confusion Matrix:")
     print(confusion_matrix(Y_test, y_pred))
 else:
-    model = RandomForestClassifier(n_estimators=100, random_state=42)
-    model.fit(X_train, Y_train)
+    dt_model = DecisionTreeClassifier(random_state=42)
+    dt_model.fit(X_train, Y_train)
+    y_pred_dt = dt_model.predict(X_test)
 
-    y_pred = model.predict(X_test)
+    accuracy_dt = accuracy_score(Y_test, y_pred_dt)
+    precision_dt = precision_score(Y_test, y_pred_dt)
+    recall_dt = recall_score(Y_test, y_pred_dt)
+    f1_dt = f1_score(Y_test, y_pred_dt)
+    cm_dt = confusion_matrix(Y_test, y_pred_dt)
 
-    accuracy = accuracy_score(Y_test, y_pred)
-    print(f'Accuracy: {accuracy:.2f}')
-
-    print(classification_report(Y_test, y_pred))
+    print(f'Decision Tree Classifier:\n Accuracy: {accuracy_dt}\n Precision: {precision_dt}\n Recall: {recall_dt}\n F1 Score: {f1_dt}')
