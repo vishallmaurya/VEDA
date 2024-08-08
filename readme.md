@@ -273,4 +273,10 @@ Results:
 6. kaggle file output: 94      https://www.kaggle.com/datasets/rabieelkharoua/alzheimers-disease-dataset/data
    VEDA output: 73
 
-7. kaggle file output: 
+7. kaggle file output: 93      https://www.kaggle.com/datasets/preethamgouda/campaign-data
+   VEDA output: 
+
+8. kaggle file output: 90.4     https://www.kaggle.com/datasets/rabieelkharoua/predict-online-gaming-behavior-dataset/data
+   VEDA output: 90.6
+
+9. Kaggle file output: 83.66  https://www.kaggle.com/datasets/rabieelkharoua/predict-customer-purchase-behavior-dataset/data
