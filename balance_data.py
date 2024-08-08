@@ -14,7 +14,7 @@ def calculate_dynamic_threshold(y):
     class_ratios = np.array(list(Counter(y).values())) / len(y)
     iqr = np.percentile(class_ratios, 75) - np.percentile(class_ratios, 25)
     dynamic_threshold = np.median(class_ratios) - (iqr / 2)
-    return max(0.01, dynamic_threshold)
+    return max(0.1, dynamic_threshold)
 
 def calculate_entropy(y):
     """
@@ -53,7 +53,7 @@ def adaptive_threshold(X, y):
     
     return small_size, large_size, imbalance_threshold
 
-def select_balancing_strategy(X, y, threshold=0.1):
+def select_balancing_strategy(X, y, threshold=0.5):
     """
     Select the most suitable balancing strategy based on data characteristics.
     """
@@ -74,7 +74,7 @@ def select_balancing_strategy(X, y, threshold=0.1):
     density_ratio = estimate_class_density(X, y)
 
     # Adjust strategy selection using dynamic thresholds and additional metrics
-    if imbalance_ratio >= dynamic_threshold:
+    if imbalance_ratio >= max(threshold, dynamic_threshold):
         return "none", None
 
     if density_ratio < 0.5:
@@ -95,7 +95,7 @@ def select_balancing_strategy(X, y, threshold=0.1):
     
     return strategy, sampler
 
-def balance_data(X, y, threshold=0.1):
+def balance_data(X, y, threshold=0.5):
     """
     Balance the dataset using the most suited strategy based on its nature.
     """
