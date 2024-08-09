@@ -12,47 +12,11 @@ from sklearn.pipeline import Pipeline,make_pipeline
 """
 
 def delete_duplicates(df, keep='first'):
-    print("Initial Size:", df.shape)
-
     if isinstance(df, pd.DataFrame):
-        # Set to store unique rows as tuples
-        seen_rows = set()
-        duplicate_indices = []
-
-        # Iterate over the DataFrame
-        for idx, row in df.iterrows():
-            row_tuple = tuple(row)
-
-            if row_tuple in seen_rows:
-                duplicate_indices.append(idx)
-            else:
-                seen_rows.add(row_tuple)
-
-        # Remove duplicates based on the `keep` parameter
-        if keep == 'first':
-            df.drop(index=duplicate_indices, inplace=True)
-        elif keep == 'last':
-            # To keep the last occurrence, reverse the order of the DataFrame
-            reversed_indices = df.index[::-1].tolist()
-            seen_rows = set()
-            keep_indices = []
-            for idx in reversed_indices:
-                row_tuple = tuple(df.loc[idx])
-                if row_tuple not in seen_rows:
-                    seen_rows.add(row_tuple)
-                    keep_indices.append(idx)
-            keep_indices.reverse()  # Re-reverse the indices to maintain original order
-            df.drop(index=[i for i in df.index if i not in keep_indices], inplace=True)
-        else:
-            raise ValueError("Invalid value for 'keep': must be 'first' or 'last'")
-
-        # Reset the index if needed
-        df.reset_index(drop=True, inplace=True)
-
-        print("Final Size:", df.shape)
-        return df
-
-    raise ValueError(f"Invalid datatype {type(df)}; this function accepts only pandas DataFrame")
+        df.drop_duplicates(inplace=True, keep=keep)
+        return
+    else:
+        raise ValueError(f"Invalid datatype {type(df)}; this function accepts only pandas DataFrame")
 
 
 """
