@@ -279,4 +279,21 @@ Results:
 8. kaggle file output: 90.4     https://www.kaggle.com/datasets/rabieelkharoua/predict-online-gaming-behavior-dataset/data
    VEDA output: 90.6
 
-9. Kaggle file output: 83.66  https://www.kaggle.com/datasets/rabieelkharoua/predict-customer-purchase-behavior-dataset/data
+9. Kaggle file output: 83.66 (when trained with duplicate data this accuracy is achieved means the model is overfitted) https://www.kaggle.com/datasets/rabieelkharoua/predict-customer-purchase-behavior-dataset/data
+   VEDA output: 68.95  
+
+10. Kaggle file output: Accuracy (weighted): 0.7189
+                        F1 Score (weighted): 0.1881
+                        Recall (weighted): 0.6553
+    https://www.kaggle.com/datasets/stealthtechnologies/predict-bankruptcy-in-poland/data 
+    VEDA output: Accuracy: 0.7261
+                 F1 Score: 0.7262
+                 Recall: 0.7269
+
+11. Kaggle file output: Accuracy: 0.892734711931881
+                        Recall: 0.8865420767444432
+                        F1 Score: 0.8677289813723068 
+    https://www.kaggle.com/datasets/abdelazizsami/bank-marketing/data 
+    VEDA output: Accuracy: 0.9419
+                 F1 Score: 0.9397
+                 Recall: 0.9061
