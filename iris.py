@@ -21,9 +21,25 @@ from catboost import CatBoostRegressor, CatBoostClassifier
 from sklearn.metrics import (balanced_accuracy_score as bas, 
                              confusion_matrix)
 
-df = pd.read_csv('data\customer_purchase_data.csv')
-y = df['PurchaseStatus']
-X = df.drop('PurchaseStatus', axis=1)
+data = pd.read_csv('data\\bank-full.csv')
+
+data_1 = np.array(data)
+
+#making the dataset a list
+elements = data_1.tolist()
+
+#seperating the data using ';' as a seperator indecator
+split_data = [item[0].split(';') for item in elements]
+
+#cleaning the extra comas in the datastring
+cleaned_data = [[element.strip('"') for element in row] for row in split_data]
+
+#transforming it back to Dataframe
+cols = ["Age", "Job", "Marital", "Education","Default", "Balance","Housing","Loan","Conatact","Day","Month","Duration","Campaign","PDay","Previous","POutCome","Y"]
+df = pd.DataFrame(cleaned_data, columns=cols)
+
+X = df.drop(columns=['Y'])
+y = df['Y']
 
 print("Initial shape:  ", X.shape, " and ", y.shape, " and ", type(y))
 
@@ -56,14 +72,21 @@ if(strategy == 'ensemble'):
     print("Confusion Matrix:")
     print(confusion_matrix(Y_test, y_pred))
 else:
-    dt_model = DecisionTreeClassifier(random_state=42)
-    dt_model.fit(X_train, Y_train)
-    y_pred_dt = dt_model.predict(X_test)
+    log_reg = RandomForestClassifier()
+    log_reg.fit(X_train, Y_train)
 
-    accuracy_dt = accuracy_score(Y_test, y_pred_dt)
-    precision_dt = precision_score(Y_test, y_pred_dt)
-    recall_dt = recall_score(Y_test, y_pred_dt)
-    f1_dt = f1_score(Y_test, y_pred_dt)
-    cm_dt = confusion_matrix(Y_test, y_pred_dt)
+    # Predict on the test set
+    y_pred = log_reg.predict(X_test)
 
-    print(f'Decision Tree Classifier:\n Accuracy: {accuracy_dt}\n Precision: {precision_dt}\n Recall: {recall_dt}\n F1 Score: {f1_dt}')
+    # Calculate accuracy, F1 score, recall
+    accuracy = accuracy_score(Y_test, y_pred)
+    f1 = f1_score(Y_test, y_pred)
+    recall = recall_score(Y_test, y_pred)
+    conf_matrix = confusion_matrix(Y_test, y_pred)
+
+    # Display the results
+    print(f'Accuracy: {accuracy:.4f}')
+    print(f'F1 Score: {f1:.4f}')
+    print(f'Recall: {recall:.4f}')
+    print('Confusion Matrix:')
+    print(conf_matrix)
