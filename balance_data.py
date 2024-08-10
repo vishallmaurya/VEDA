@@ -121,8 +121,12 @@ def balance_data(X, y, threshold=0.5):
         model.fit(X, y)
         return X, y, strategy, model
 
-def callingfunc(X, y):
-    return balance_data(X, y)
+def callingfunc(X, y, classification):
+    if classification == None:
+        raise ValueError("Parameter classification can't be empty")
+    if classification == True:
+        return balance_data(X, y)
+    return X, y, None, None
 
 # Example usage:
 # X, y = pd.DataFrame(np.random.randn(10000, 10)), pd.Series(np.random.choice([0, 1], size=10000, p=[0.95, 0.05]))
