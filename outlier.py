@@ -98,52 +98,68 @@ def tune_isolation_forest_params_with_optuna(X):
         tests: this parameter is list of string with name of tests that user can perform
 """
 
-def is_normal_distribution(data, minlen=5000, tests=['skew-kurtosis']):
-    # Convert data to pandas Series if it's not already
+def is_normal_distribution(data, minlen=5000, tests=['skew-kurtosis'], skew_thresh=1, kurt_thresh=1):
+    """
+    Check if the data follows a normal distribution based on selected statistical tests.
+
+    Parameters:
+    - data: pandas Series or array-like, the data to test.
+    - minlen: int, minimum length for performing the Shapiro test.
+    - tests: list of str, statistical tests to use for normality check.
+    - skew_thresh: float, threshold for skewness to determine normality.
+    - kurt_thresh: float, threshold for kurtosis deviation from 3 to determine normality.
+
+    Returns:
+    - bool: True if data is likely normal, False otherwise.
+    """
     if not isinstance(data, pd.Series):
         data = pd.Series(data)
     
     numerical_type = ['int64', 'int32', 'int16', 'int8', 'uint64', 'uint32', 'uint16', 'uint8', 'float64', 'float32']
-    
     if data.dtype not in numerical_type:
         raise ValueError(f"data should contain only numerical values; permitted data types are {numerical_type}")
     
     if not isinstance(tests, list):
         raise ValueError("tests should be a list of strings")
-
+    
     test_list = ['skew-kurtosis', 'shapiro', 'kstest', 'anderson', 'jarque-bera']
-
     for t in tests:
         if t not in test_list:
             raise ValueError(f"Invalid test. Did you mean one of {test_list}?")
-
-    if (len(data) < minlen) and ('shapiro' in tests):
+    
+    # Perform Shapiro test if the data length is sufficient
+    if (len(data) >= minlen) and ('shapiro' in tests):
         shapiro_stat, shapiro_p_value = shapiro(data)
         if shapiro_p_value <= 0.05:
             return False
 
+    # Check skewness and kurtosis
     if 'skew-kurtosis' in tests:
         data_skewness = skew(data)
         data_kurtosis = kurtosis(data, fisher=False)
-        if abs(data_skewness) >= 1 or abs(data_kurtosis - 3) >= 1:
+        if abs(data_skewness) > skew_thresh or abs(data_kurtosis - 3) > kurt_thresh:
             return False
-
+    
+    # Kolmogorov-Smirnov test
     if 'kstest' in tests:
         ks_stat, ks_p_value = kstest(data, 'norm', args=(data.mean(), data.std()))
         if ks_p_value <= 0.05:
             return False
     
+    # Anderson-Darling test
     if 'anderson' in tests:
         anderson_result = anderson(data)
         if any(anderson_result.statistic >= cv for cv in anderson_result.critical_values):
             return False
     
+    # Jarque-Bera test
     if 'jarque-bera' in tests:
         jb_stat, jb_p_value = jarque_bera(data)
         if jb_p_value <= 0.05:
             return False
     
     return True
+
 
 
 """
@@ -191,7 +207,7 @@ def handle_outliers(data, y, tests=['skew-kurtosis'], method='default', handle='
     # Prepare to track outliers
     outlier_indices = []
 
-    # Check for multimodal columns using Dip Test
+    # 1. Check for multimodal columns using Dip Test
     multimodal_columns = []
     for column in data.columns:
         dip_stat, dip_p_value = diptest(data[column])
@@ -207,53 +223,57 @@ def handle_outliers(data, y, tests=['skew-kurtosis'], method='default', handle='
             labels = dbscan.fit_predict(data[[column]])
             noise = data[labels == -1]
             outlier_indices.extend(noise.index)
+    
+    # If multimodal columns are handled, skip the other methods
+    if not outlier_indices:
+        # 2. Apply Isolation Forest if the dataset is large or if explicitly chosen
+        if (method == 'default' and data.shape[0] >= 10000) or (method == 'isolation-forest'):
+            print("Isolation Forest is used for outlier detection.")
+            iso_forest = tune_isolation_forest_params_with_optuna(data)
+            outlier = iso_forest.fit_predict(data)
+            outlier_indices.extend(data.index[outlier == -1])
 
-    if (method == 'default' and data.shape[0] >= 10000) or (method == 'isolation-forest'):
-        print("Isolation Forest is used for outlier detection.")
-        iso_forest = tune_isolation_forest_params_with_optuna(data)
-        outlier = iso_forest.fit_predict(data)
-        outlier_indices.extend(data.index[outlier == -1])
+        # 3. Apply LOF if the conditions are met or explicitly chosen
+        if not outlier_indices:
+            k = int(sqrt(len(data)))
+            variance_threshold = 0.05
+            dip_p_value_threshold = 0.05
 
-    if method == 'default':
-        k = int(sqrt(len(data)))
-        variance_threshold = 0.05
-        dip_p_value_threshold = 0.05
+            nbrs = NearestNeighbors(n_neighbors=k).fit(data)
+            distances, _ = nbrs.kneighbors(data)
+            distances = distances[:, k-1]
 
-        nbrs = NearestNeighbors(n_neighbors=k).fit(data)
-        distances, _ = nbrs.kneighbors(data)
-        distances = distances[:, k-1]
+            dist_variance = np.var(distances)
+            dip, dip_p_value = diptest(distances)
 
-        dist_variance = np.var(distances)
-        dip, dip_p_value = diptest(distances)
+            use_lof = (dist_variance > variance_threshold) and (dip_p_value < dip_p_value_threshold)
 
-        use_lof = (dist_variance > variance_threshold) and (dip_p_value < dip_p_value_threshold)
+            if use_lof or method == 'lof':
+                print("Local Outlier Factor (LOF) is used for outlier detection.")
+                lof = LocalOutlierFactor(n_neighbors=k)
+                y_pred = lof.fit_predict(data)
+                outlier_indices.extend(data.index[y_pred == -1])
 
-        if use_lof or method == 'lof':
-            print("Local Outlier Factor (LOF) is used for outlier detection.")
-            lof = LocalOutlierFactor(n_neighbors=k)
-            y_pred = lof.fit_predict(data)
-            outlier_indices.extend(data.index[y_pred == -1])
-
-        if method == 'default':
+        # 4. Apply the normal distribution method as a last resort
+        if not outlier_indices and method == 'default':
             print("Default method for outlier detection.")
             for column in data.columns:
                 if is_normal_distribution(data[column]):
-                    print("normal:   ")
                     mean = data[column].mean()
                     std = data[column].std()
                     upper_limit = mean + 3 * std
                     lower_limit = mean - 3 * std
                     outliers = (data[column] > upper_limit) | (data[column] < lower_limit)
-                # else:
-                #     print("iqr :  ")
-                #     q25 = data[column].quantile(0.25)
-                #     q75 = data[column].quantile(0.75)
-                #     iqr = q75 - q25
-                #     upper_limit = q75 + 1.5 * iqr
-                #     lower_limit = q25 - 1.5 * iqr
-                #     outliers = (data[column] > upper_limit) | (data[column] < lower_limit)
-
                     outlier_indices.extend(data.index[outliers])
+
+                    if handle == 'capping':
+                        data[column] = np.where(data[column] > upper_limit, upper_limit,
+                                                np.where(data[column] < lower_limit, lower_limit, data[column]))
+                    elif handle == 'trimming':
+                        data = data[~outliers]
+                        y = y[~outliers]
+                    elif handle == 'winsorization':
+                        data[column] = data[column].clip(lower=lower_limit, upper=upper_limit)
 
     # Remove duplicate indices and keep only valid indices
     outlier_indices = list(set(outlier_indices))
@@ -269,6 +289,7 @@ def handle_outliers(data, y, tests=['skew-kurtosis'], method='default', handle='
         cleaned_y = y
 
     return outliers, cleaned_data, cleaned_y
+
 
     
 def callingfun(X, y):
