@@ -13,7 +13,9 @@ from sklearn.pipeline import Pipeline,make_pipeline
 
 def delete_duplicates(df, keep='first'):
     if isinstance(df, pd.DataFrame):
+        print("duplicate sum:  ", df.duplicated().sum())
         df.drop_duplicates(inplace=True, keep=keep)
+
         return
     else:
         raise ValueError(f"Invalid datatype {type(df)}; this function accepts only pandas DataFrame")
@@ -326,12 +328,11 @@ def get_data(df, keep='first', min_cat_percent = 5.0,
 
 def callingfunc(X, y):
     X = get_data(X)
-    delete_duplicates(X)
     if pd.api.types.is_object_dtype(y):
         labelencoder = LabelEncoder()
         y = labelencoder.fit_transform(y)
         y = pd.Series(y)
     y = y.iloc[X.index]
-
+    print("data from missing_value.py :   ", X.shape, " and ", y.shape)
     return X, y
     
