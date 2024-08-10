@@ -100,10 +100,10 @@ from catboost import CatBoostRegressor, CatBoostClassifier
 from sklearn.metrics import (balanced_accuracy_score as bas, 
                              confusion_matrix)
 
-df = pd.read_csv('data\\framingham.csv')
+df = pd.read_csv('data\laptop_price.csv',encoding='ISO-8859-1')
 
-X=df.drop("TenYearCHD",axis=1)
-y=df['TenYearCHD']
+X = df.drop(columns = "Price_euros")
+y = df["Price_euros"]
 
 print("Initial shape:  ", X.shape, " and ", y.shape, " and ", type(y))
 
@@ -111,7 +111,7 @@ X, y = mv.callingfunc(X, y)
 outlier, X, y = out.callingfun(X, y)
 X, y = fs.callingfunc(X, y)
 X, y = dr.callingfunc(X, y)
-X, y, strategy, model = bd.callingfunc(X, y, classification=True)
+X, y, strategy, model = bd.callingfunc(X, y, classification=False)
 
 print("Final shape:  ", X.shape, " and ", y.shape)
 
@@ -119,4 +119,4 @@ new_df = X
 new_df['target'] = y
 print("strategy:   ", strategy)
 
-new_df.to_csv('framingham.csv', index=False)
+new_df.to_csv('cleaned_data\laptop_price.csv', index=False)
