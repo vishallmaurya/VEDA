@@ -327,12 +327,19 @@ def get_data(df, keep='first', min_cat_percent = 5.0,
 """
 
 def callingfunc(X, y):
+    y.dropna(inplace = True)
+    X = X.iloc[y.index]
+
+    X = X.reset_index(drop=True)
+    y = y.reset_index(drop=True)
+
     X = get_data(X)
+    y = y.iloc[X.index]    
+    
     if pd.api.types.is_object_dtype(y):
         labelencoder = LabelEncoder()
         y = labelencoder.fit_transform(y)
         y = pd.Series(y)
-    y = y.iloc[X.index]
     print("data from missing_value.py :   ", X.shape, " and ", y.shape)
     return X, y
     
