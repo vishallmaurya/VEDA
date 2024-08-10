@@ -324,3 +324,16 @@ Results:
 16. Kaggle file output: Score: 0.9856451268030545
     https://www.kaggle.com/datasets/muhammetvarl/laptop-price/data
     VEDA output: Score: 0.9906087394099516
+
+17. Kaggle file output: Mean Squared Error: 6.675444100493416
+                        R-squared: 0.7409934356413092
+    https://www.kaggle.com/datasets/vijayaadithyanvg/car-price-predictionused-cars/data
+    VEDA output: Mean Squared Error: 1.0183203484082883
+                 R-squared: 0.8010557120463462
+
+18. Kaggle file output: R2-Score on Testing set ---> 0.0033893932602986343
+                        Mean Squared Error (MSE) on Training set       ---> 416.27786007129083
+    https://www.kaggle.com/datasets/yasserh/song-popularity-dataset/data
+    VEDA output: R2-Score on Testing set ---> 0.0193547804130485
+                 Mean Squared Error (MSE) on Training set       ---> 405.1578445567519
+
