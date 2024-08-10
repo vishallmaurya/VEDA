@@ -100,10 +100,10 @@ from catboost import CatBoostRegressor, CatBoostClassifier
 from sklearn.metrics import (balanced_accuracy_score as bas, 
                              confusion_matrix)
 
-df = pd.read_csv('data\online_course_engagement_data.csv')
+df = pd.read_csv('data\\framingham.csv')
 
-X = df.drop(columns=['CourseCompletion'])
-y = df['CourseCompletion']
+X=df.drop("TenYearCHD",axis=1)
+y=df['TenYearCHD']
 
 print("Initial shape:  ", X.shape, " and ", y.shape, " and ", type(y))
 
@@ -111,57 +111,12 @@ X, y = mv.callingfunc(X, y)
 outlier, X, y = out.callingfun(X, y)
 X, y = fs.callingfunc(X, y)
 X, y = dr.callingfunc(X, y)
-X, y, strategy, model = bd.callingfunc(X, y)
+X, y, strategy, model = bd.callingfunc(X, y, classification=True)
 
 print("Final shape:  ", X.shape, " and ", y.shape)
 
 new_df = X
 new_df['target'] = y
+print("strategy:   ", strategy)
 
-new_df.to_csv('handle_this_data.csv')
-
-# X_train, X_test, Y_train, Y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-
-# if(strategy == 'ensemble'):
-#     model.fit(X_train, Y_train)
-
-#     # Predict on the test data
-#     y_pred = model.predict(X_test)
-
-#     # Evaluate the model
-#     accuracy = accuracy_score(Y_test, y_pred)
-#     print(f"Accuracy: {accuracy}")
-
-#     # Detailed classification report
-#     print("Classification Report:")
-#     print(classification_report(Y_test, y_pred))
-
-#     # Confusion Matrix
-#     print("Confusion Matrix:")
-#     print(confusion_matrix(Y_test, y_pred))
-# else:
-#     # Hyperparameter tuning with GridSearchCV
-#     param_grid = {
-#         'n_estimators': [100, 200, 300],
-#         'learning_rate': [0.01, 0.1, 0.2],
-#         'max_depth': [3, 4, 5],
-#         'subsample': [0.8, 0.9, 1.0],
-#         'min_samples_split': [2, 3, 4]
-#     }
-
-#     grid_search = GridSearchCV(GradientBoostingClassifier(), param_grid, cv=5, scoring='accuracy', n_jobs=-1)
-#     grid_search.fit(X_train, Y_train)
-
-#     # Best model from GridSearchCV
-#     best_model = grid_search.best_estimator_
-#     print(f'Best parameters found: {grid_search.best_params_}')
-
-#     # Evaluating the best model
-#     y_pred = best_model.predict(X_test)
-#     accuracy = accuracy_score(Y_test, y_pred)
-#     print(f'Accuracy: {accuracy}')
-#     print('Classification Report:')
-#     print(classification_report(Y_test, y_pred))
-#     print('Confusion Matrix:')
-#     print(confusion_matrix(Y_test, y_pred))
+new_df.to_csv('framingham.csv', index=False)
