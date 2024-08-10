@@ -39,8 +39,6 @@ def make_category_columns(df, min_cat_percent = 5.0):
 
             if percent_count <= min_cat_percent:
                 df[cols] = df[cols].astype('object')
-            else:
-                df.drop(cols, axis=1, inplace=True)
     return 
 
 """
