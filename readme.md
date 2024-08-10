@@ -297,3 +297,8 @@ Results:
     VEDA output: Accuracy: 0.9419
                  F1 Score: 0.9397
                  Recall: 0.9061
+
+12. Kaggle file output: Accuracy: 60.8341
+    https://www.kaggle.com/datasets/uom190346a/water-quality-and-potability/data
+    VEDA output: Accuracy: 0.6407
+                
