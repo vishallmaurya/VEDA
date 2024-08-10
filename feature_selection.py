@@ -1,13 +1,14 @@
 import traceback
 import pandas as pd
 import numpy as np
-from sklearn.feature_selection import chi2, mutual_info_classif, SelectKBest
+from sklearn.feature_selection import chi2, mutual_info_classif, mutual_info_regression, SelectKBest
 from sklearn.linear_model import LassoCV, Lasso
 from sklearn.metrics import r2_score
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.preprocessing import StandardScaler
 import statsmodels.api as sm
 from concurrent.futures import ThreadPoolExecutor
+from sklearn.utils.multiclass import type_of_target
 import missing_value as mv
 
 def standardize(df):
@@ -70,8 +71,13 @@ def select_optimal_k_mi(X, y):
     if X.size == 0 or y.size == 0:
         raise ValueError("X and y must not be empty.")
 
+    target_type = type_of_target(y)
+
     try:
-        mi_scores = mutual_info_classif(X, y)
+        if target_type == 'continuous':
+            mi_scores = mutual_info_regression(X, y)
+        else:
+            mi_scores = mutual_info_classif(X, y)
     except Exception as e:
         raise RuntimeError(f"Failed to calculate mutual information scores: {e}")
     
@@ -95,8 +101,13 @@ def select_optimal_k_mi(X, y):
 def select_mi_features(X, y):
     """Selects features based on mutual information."""
     k = select_optimal_k_mi(X, y)
+    target_type = type_of_target(y)
 
-    mi_selector = SelectKBest(mutual_info_classif, k=k)
+    if target_type == 'continuous':
+        mi_selector = SelectKBest(mutual_info_regression, k=k)
+    else:
+        mi_selector = SelectKBest(mutual_info_classif, k=k)
+
     mi_selector.fit(X, y)
     selected_features = mi_selector.get_support(indices=True)
     return selected_features
