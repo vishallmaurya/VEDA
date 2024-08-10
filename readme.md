@@ -311,7 +311,7 @@ Results:
                         EMSE TRAIN =  2.0404125269293445
                         MSE =  1.63822109525192
                         r2 score =  98.85673201605442
-    https://www.kaggle.com/datasets/nikhil7280/student-performance-multiple-linear-regression/code
+    https://www.kaggle.com/datasets/nikhil7280/student-performance-multiple-linear-regression/data
     VEDA output: EMSE TRAIN =  2.08594723196582
                  EMSE TRAIN =  2.02492302347625
                  MSE =  1.6550824874478314
@@ -320,3 +320,7 @@ Results:
 15. Kaggle file output: Accuracy: 0.8216981132075472
     https://www.kaggle.com/datasets/dileep070/heart-disease-prediction-using-logistic-regression/data
     VEDA output: Accuracy: 0.8884172225591267
+
+16. Kaggle file output: Score: 0.9856451268030545
+    https://www.kaggle.com/datasets/muhammetvarl/laptop-price/data
+    VEDA output: Score: 0.9906087394099516
