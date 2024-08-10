@@ -301,4 +301,22 @@ Results:
 12. Kaggle file output: Accuracy: 60.8341
     https://www.kaggle.com/datasets/uom190346a/water-quality-and-potability/data
     VEDA output: Accuracy: 0.6407
-                
+
+
+13. Kaggle file output: Accuracy: 96
+    https://www.kaggle.com/datasets/rabieelkharoua/predict-online-course-engagement-dataset/data
+    VEDA output: Accuracy : 93
+
+14. Kaggle file output: EMSE TRAIN =  2.049995197159279
+                        EMSE TRAIN =  2.0404125269293445
+                        MSE =  1.63822109525192
+                        r2 score =  98.85673201605442
+    https://www.kaggle.com/datasets/nikhil7280/student-performance-multiple-linear-regression/code
+    VEDA output: EMSE TRAIN =  2.08594723196582
+                 EMSE TRAIN =  2.02492302347625
+                 MSE =  1.6550824874478314
+                 r2 score =  98.84184922189576
+
+15. Kaggle file output: Accuracy: 0.8216981132075472
+    https://www.kaggle.com/datasets/dileep070/heart-disease-prediction-using-logistic-regression/data
+    VEDA output: Accuracy: 0.8884172225591267
