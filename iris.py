@@ -100,17 +100,18 @@ from catboost import CatBoostRegressor, CatBoostClassifier
 from sklearn.metrics import (balanced_accuracy_score as bas, 
                              confusion_matrix)
 
-df = pd.read_csv('data\song_data.csv')
+df = pd.read_csv('data\student_data.csv')
 
-X = df.drop(['song_popularity'],axis=1)
-y = df['song_popularity']
+X = df.drop(['G3'],axis=1)
+y = df['G3']
 
 print("Initial shape:  ", X.shape, " and ", y.shape, " and ", type(y))
 
 X, y = mv.callingfunc(X, y)
-outlier, X, y = out.callingfun(X, y)
 X, y = fs.callingfunc(X, y)
 X, y = dr.callingfunc(X, y)
+outlier, X, y = out.callingfun(X, y)
+
 X, y, strategy, model = bd.callingfunc(X, y, classification=False)
 
 print("Final shape:  ", X.shape, " and ", y.shape)
@@ -119,4 +120,4 @@ new_df = X
 new_df['target'] = y
 print("strategy:   ", strategy)
 
-new_df.to_csv('cleaned_data\song_data.csv', index=False)
+new_df.to_csv('cleaned_data\student_data.csv', index=False)
