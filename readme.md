@@ -259,6 +259,20 @@ Would you like to focus on a specific part of the code for deeper analysis or po
 
 Results:
 
+# about result observation
+
+Good Aspects:
+Data Quality:
+
+The data is likely well-prepared and features are effectively processed, leading to consistent performance across models. This suggests that the cleaning and preprocessing steps have removed noise and standardized the data, which is beneficial for model training.
+Model Robustness:
+
+If multiple models show similar performance, it may indicate that your data is well-structured and that the models are behaving consistently. This is often a sign that your features are relevant and predictive.
+Fair Comparison:
+
+When all models perform similarly, it allows for a fair comparison of models, making it easier to select based on other criteria like computational efficiency or interpretability.
+
+
 1. kaggle file output: 78.4546
    VEDA output: 78.1256
 2. Kaggle file output: 98.314
@@ -337,3 +351,47 @@ Results:
     VEDA output: R2-Score on Testing set ---> 0.0193547804130485
                  Mean Squared Error (MSE) on Training set       ---> 405.1578445567519
 
+
+19. Kaggle file output: acc train 0.8376353046949936
+                        acc test 0.8234439241961519
+                        MAE train 1.8899215824791515
+                        MAE test 2.000415241289347
+                        MSE train 14.405343302889062
+                        MSE test 15.603500964903839
+https://www.kaggle.com/datasets/yasserh/uber-fares-dataset/data
+    VEDA output: acc train 0.7232828763230739
+                acc test 0.7126249330918997
+                MAE train 2.780106046946104
+                MAE test 2.8498457032829214
+                MSE train 27.38834235654672
+                MSE test 27.101811218064384
+
+20. Kaggle file output: Test set evaluation:
+                        _____________________________________
+                        MAE: 1.0809411764705883
+                        MSE: 3.2274507731092434
+                        RMSE: 1.796510721679457
+                        R2 Square 0.8531779882359745
+                        __________________________________
+                        Train set evaluation:
+                        _____________________________________
+                        MAE: 0.35433695652173913
+                        MSE: 0.3218229528985507
+                        RMSE: 0.5672944146548163
+                        R2 Square 0.9842859837931803
+                        __________________________________
+    https://www.kaggle.com/datasets/devansodariya/student-performance-data/data
+    VEDA output: Test set evaluation:
+                _____________________________________
+                MAE: 1.20737
+                MSE: 4.0396028500000005
+                RMSE: 2.0098763270410447
+                R2 Square 0.8212082531125657
+                __________________________________
+                Train set evaluation:
+                _____________________________________
+                MAE: 0.3997456896551724
+                MSE: 0.4017333922413793
+                RMSE: 0.6338244175174851
+                R2 Square 0.9794546636945484
+                __________________________________
