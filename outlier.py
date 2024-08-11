@@ -9,6 +9,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import f1_score
 import optuna
 from diptest import diptest
+import warnings
 
 
 
@@ -161,6 +162,14 @@ def is_normal_distribution(data, minlen=5000, tests=['skew-kurtosis'], skew_thre
     return True
 
 
+def stratified_sample(data, column, n_samples, n_splits=5):
+    data['quantile_bin'] = pd.qcut(data[column], q=n_splits, labels=False, duplicates='drop')
+    stratified_data, _ = train_test_split(data, stratify=data['quantile_bin'], 
+                                          train_size=n_samples, random_state=42)
+    stratified_data = stratified_data.drop(columns=['quantile_bin'])
+    return stratified_data
+
+
 
 """
     parameters:
@@ -210,6 +219,7 @@ def handle_outliers(data, y, tests=['skew-kurtosis'], method='default', handle='
     # 1. Check for multimodal columns using Dip Test
     multimodal_columns = []
     for column in data.columns:
+        warnings.simplefilter("ignore")
         dip_stat, dip_p_value = diptest(data[column])
         if dip_p_value < 0.05:
             multimodal_columns.append(column)
@@ -217,12 +227,16 @@ def handle_outliers(data, y, tests=['skew-kurtosis'], method='default', handle='
     if multimodal_columns:
         print(f"Multimodal distribution detected in columns: {multimodal_columns}")
         
-        # Apply clustering-based approach for multimodal columns
         for column in multimodal_columns:
+            sampled_data = stratified_sample(data, column, n_samples=int(0.15 * len(data)), n_splits=5)
+            
             dbscan = DBSCAN()
-            labels = dbscan.fit_predict(data[[column]])
-            noise = data[labels == -1]
+            labels = dbscan.fit_predict(sampled_data[[column]])
+            
+            noise = sampled_data[labels == -1]
+            
             outlier_indices.extend(noise.index)
+
     
     # If multimodal columns are handled, skip the other methods
     if not outlier_indices:
