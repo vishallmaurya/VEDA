@@ -395,3 +395,15 @@ https://www.kaggle.com/datasets/yasserh/uber-fares-dataset/data
                 RMSE: 0.6338244175174851
                 R2 Square 0.9794546636945484
                 __________________________________
+
+21. Kaggle file output: accuracy: 0.9694979568009341
+                        mse: 0.013360000000000002
+https://www.kaggle.com/datasets/vikramamin/bank-loan-approval-lr-dt-rf-and-auc/data
+        VEDA: accuracy: 0.9878166601134639
+              mse: 0.009757751937984496
+
+22. Delloite hackathon file: https://www.kaggle.com/datasets/manishtripathi86/deloitte-hackathon-predict-the-loan-defaulter/data
+    VEDA: Accuracy: 0.9452
+          precision: 0.91
+          recall: 0.99
+          f1-score: 0.95
