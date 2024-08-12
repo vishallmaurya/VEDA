@@ -294,9 +294,10 @@ def handle_outliers(data, y, tests=['skew-kurtosis'], method='default', handle='
     outlier_indices = [i for i in outlier_indices if 0 <= i < len(data)]
 
     if outlier_indices:
+        valid_indices = [idx for idx in outlier_indices if idx in data.index and idx in y.index]
         outliers = data.loc[outlier_indices]
-        cleaned_data = data.drop(outlier_indices)
-        cleaned_y = y.drop(outlier_indices)
+        cleaned_data = data.drop(valid_indices)
+        cleaned_y = y.drop(valid_indices)
     else:
         outliers = pd.DataFrame(columns=data.columns)
         cleaned_data = data
