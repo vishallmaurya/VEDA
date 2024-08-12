@@ -142,11 +142,12 @@ def callingfunc(X, y):
     try:
         skip, num_components = num_components_for_variance(X)
 
+        X_scaled_df = standardize(X)        
+
         if(skip or X.shape[1] < 30):
-            return X, y
+            return X_scaled_df, y
 
         
-        X_scaled_df = standardize(X)        
         if is_pca_valid(X_scaled_df):
             X_reduced = apply_pca(X_scaled_df)
             return X_reduced, y
