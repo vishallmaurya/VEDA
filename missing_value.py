@@ -33,7 +33,7 @@ def make_category_columns(df, min_cat_percent = 5.0):
     columns = df.columns
 
     for cols in columns:
-        if pd.api.types.is_object_dtype(df[cols]):
+        if pd.api.types.is_object_dtype(df[cols]) == False:
             count = df[cols].nunique()
             percent_count = (count/df[cols].shape[0])*100 
 
