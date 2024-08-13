@@ -407,3 +407,10 @@ https://www.kaggle.com/datasets/vikramamin/bank-loan-approval-lr-dt-rf-and-auc/d
           precision: 0.91
           recall: 0.99
           f1-score: 0.95
+
+
+
+# to do
+
+in Outlier  the only multimodal attributes are get checked.
+There are some function that work for only categorical or numerical.
