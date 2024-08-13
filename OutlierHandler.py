@@ -11,6 +11,7 @@ from sklearn.metrics import f1_score
 import optuna
 from diptest import diptest
 import warnings
+from sklearn.pipeline import Pipeline,make_pipeline
 
 class OutlierHandlerTransformer(BaseEstimator, TransformerMixin):
     def __init__(self, tests=['skew-kurtosis'], method='default', handle='capping', minlen=5000, skew_thresh=1, kurt_thresh=1):
@@ -70,10 +71,9 @@ class OutlierHandlerTransformer(BaseEstimator, TransformerMixin):
         if y is not None and not isinstance(y, pd.Series):
             raise ValueError(f"Expected y to be a pandas Series, got {type(y)} instead.")
 
-        # Handling outliers
         outliers, cleaned_x, cleaned_y = self._handle_outliers(X, y)
 
-        return outlers, cleaned_x, cleaned_y
+        return outliers, cleaned_x, cleaned_y
 
     def _handle_outliers(self, data, y=None):
         numerical_type = ['int64', 'int32', 'int16', 'int8', 'uint64', 'uint32', 'uint16', 'uint8', 'float64', 'float32']
@@ -87,11 +87,15 @@ class OutlierHandlerTransformer(BaseEstimator, TransformerMixin):
 
         # 1. Check for multimodal columns using Dip Test
         multimodal_columns = []
+        non_multimodal_columns = []
+
         for column in data.columns:
             warnings.simplefilter("ignore")
             dip_stat, dip_p_value = diptest(data[column])
             if dip_p_value < 0.05:
                 multimodal_columns.append(column)
+
+        non_multimodal_columns = [col for col in data.columns if col not in multimodal_columns]
 
         if multimodal_columns:
             print(f"Multimodal distribution detected in columns: {multimodal_columns}")
@@ -102,7 +106,7 @@ class OutlierHandlerTransformer(BaseEstimator, TransformerMixin):
                 noise = sampled_data[labels == -1]
                 outlier_indices.extend(noise.index)
 
-        if not outlier_indices:
+        if not outlier_indices or len(non_multimodal_columns) > 0:
             # 2. Apply Isolation Forest
             if (self.method == 'default' and data.shape[0] >= 10000) or (self.method == 'isolation-forest'):
                 print("Isolation Forest is used for outlier detection.")
@@ -111,7 +115,7 @@ class OutlierHandlerTransformer(BaseEstimator, TransformerMixin):
                 outlier_indices.extend(data.index[outlier == -1])
 
             # 3. Apply LOF
-            if not outlier_indices:
+            if not outlier_indices or len(non_multimodal_columns) > 0:
                 k = int(sqrt(len(data)))
                 variance_threshold = 0.05
                 dip_p_value_threshold = 0.05
@@ -175,7 +179,7 @@ class OutlierHandlerTransformer(BaseEstimator, TransformerMixin):
         stratified_data = stratified_data.drop(columns=['quantile_bin'])
         return stratified_data
 
-    def is_normal_distribution(self, data):
+    def _is_normal_distribution(self, data):
         """
         Check if the data follows a normal distribution based on selected statistical tests.
 
@@ -265,22 +269,43 @@ class OutlierHandlerTransformer(BaseEstimator, TransformerMixin):
         else:
             return 20
 
-    def processOutlier(self, X, y):
+
+class OutlierPreprocessor:
+    def __init__(self, outlier_handler=None):
+        if outlier_handler is None:
+            outlier_handler = OutlierHandlerTransformer()  # Default to a new instance if none provided
+        self.pipeline = Pipeline(steps=[('outlier_handler', outlier_handler)])
+
+    def fit(self, X, y=None):
         if not isinstance(X, pd.DataFrame):
-            raise ValueError(f"X should be a pandas DataFrame, got {type(X)} instead.")
-        if not isinstance(y, pd.Series):
-            raise ValueError(f"y should be a pandas Series, got {type(y)} instead.")
-
+            raise ValueError(f"Expected X to be a pandas DataFrame, got {type(X)} instead.")
+        if y is not None and not isinstance(y, pd.Series):
+            raise ValueError(f"Expected y to be a pandas Series, got {type(y)} instead.")
         try:
-            outliers, cleaned_x, cleaned_y = self.transform(X, y)
+            self.pipeline.fit(X, y)
+            return self
         except Exception as e:
-            raise RuntimeError(f"Error during outlier handling: {str(e)}")
+            raise RuntimeError(f"An error occurred during fitting: {str(e)}")
 
-        print("data size: ", X.shape)
-        print("y size and type: ", y.size, " and ", type(y))
-        print("outlier size: ", outliers.shape)
-        print("cleaned_x size: ", cleaned_x.shape)
-        print("cleaned_y size: ", cleaned_y.shape)
-        print("ok after getting :  ", type(cleaned_y))
+    def transform(self, X, y=None):
+        if not isinstance(X, pd.DataFrame):
+            raise ValueError(f"Expected X to be a pandas DataFrame, got {type(X)} instead.")
+        if y is not None and not isinstance(y, pd.Series):
+            raise ValueError(f"Expected y to be a pandas Series, got {type(y)} instead.")
+        try:
+            outliers, cleaned_X, cleaned_y = self.pipeline.named_steps['outlier_handler'].transform(X, y)
+            return outliers, cleaned_X, cleaned_y
+        except Exception as e:
+            raise RuntimeError(f"An error occurred during transformation: {str(e)}")
 
-        return outliers, cleaned_x, cleaned_y
+    def fit_transform(self, X, y=None):
+        if not isinstance(X, pd.DataFrame):
+            raise ValueError(f"Expected X to be a pandas DataFrame, got {type(X)} instead.")
+        if y is not None and not isinstance(y, pd.Series):
+            raise ValueError(f"Expected y to be a pandas Series, got {type(y)} instead.")
+        try:
+            self.pipeline.fit(X, y)
+            outliers, cleaned_X, cleaned_y = self.pipeline.named_steps['outlier_handler'].transform(X, y)
+            return outliers, cleaned_X, cleaned_y
+        except Exception as e:
+            raise RuntimeError(f"An error occurred during fit_transform: {str(e)}")
