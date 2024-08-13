@@ -73,7 +73,7 @@ class OutlierHandlerTransformer(BaseEstimator, TransformerMixin):
         # Handling outliers
         outliers, cleaned_x, cleaned_y = self._handle_outliers(X, y)
 
-        return cleaned_x, cleaned_y
+        return outlers, cleaned_x, cleaned_y
 
     def _handle_outliers(self, data, y=None):
         numerical_type = ['int64', 'int32', 'int16', 'int8', 'uint64', 'uint32', 'uint16', 'uint8', 'float64', 'float32']
@@ -272,7 +272,7 @@ class OutlierHandlerTransformer(BaseEstimator, TransformerMixin):
             raise ValueError(f"y should be a pandas Series, got {type(y)} instead.")
 
         try:
-            cleaned_x, cleaned_y = self.transform(X, y)
+            outliers, cleaned_x, cleaned_y = self.transform(X, y)
         except Exception as e:
             raise RuntimeError(f"Error during outlier handling: {str(e)}")
 
