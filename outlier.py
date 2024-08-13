@@ -18,33 +18,6 @@ import warnings
         methodname: a string having value of name of outlier methods that are provided.
 """
 
-
-
-def get_outliermethod_params(methodname):
-    if not isinstance(methodname, str):
-        raise ValueError("The methodname should be a string")
-
-    method_list = ['isolation-forest', 'lof', 'dbscan', 'z-score', 'iqr']
-
-    if methodname not in method_list:
-        raise ValueError(f"There is no method defined in the library of name {methodname}")
-    
-    if methodname == 'isolation-forest':
-        iso_forest = IsolationForest()
-        return iso_forest.get_params()
-    elif methodname == 'lof':
-        lof = LocalOutlierFactor()
-        return lof.get_params()
-    elif methodname == 'dbscan':
-        dbscan = DBSCAN()
-        return dbscan.get_params()
-    elif methodname == 'z-score':
-        return None
-    elif methodname == 'iqr':
-        return None
-
-
-
 def objective(trial, X):
     contamination = trial.suggest_float('contamination', 0.01, 0.1)
     n_estimators = trial.suggest_int('n_estimators', 50, 300)
