@@ -115,7 +115,7 @@ class OutlierHandlerTransformer(BaseEstimator, TransformerMixin):
                 outlier_indices.extend(data.index[outlier == -1])
 
             # 3. Apply LOF
-            if not outlier_indices or len(non_multimodal_columns) > 0:
+            if not outlier_indices:
                 k = int(sqrt(len(data)))
                 variance_threshold = 0.05
                 dip_p_value_threshold = 0.05
