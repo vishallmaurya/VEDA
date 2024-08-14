@@ -149,7 +149,7 @@ def callingfunc(X, y):
 
         
         if is_pca_valid(X_scaled_df):
-            X_reduced = apply_pca(X_scaled_df)
+            X_reduced = apply_pca(X_scaled_df, num_components)
             return X_reduced, y
         else:
             if X_scaled_df.shape[0] <= 10000 and X_scaled_df.shape[1] <= 50:
