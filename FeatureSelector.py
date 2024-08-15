@@ -423,7 +423,7 @@ class FeatureSelectionPipeline(BaseEstimator, TransformerMixin):
         self.aic_bic_selector.fit(X, y)
         return self
 
-    def transform(self, X):
+    def transform(self, X, y=None):
         """Transforms X by selecting features based on various methods."""
         if not isinstance(X, pd.DataFrame):
             raise TypeError("X must be a pandas DataFrame.")
@@ -439,8 +439,11 @@ class FeatureSelectionPipeline(BaseEstimator, TransformerMixin):
         # Combine all selected features
         all_selected_features = set(correlation_features) | set(mi_features) | set(lasso_features) | set(aic_bic_features)
         
-        return list(all_selected_features)
+        X = X[all_selected_features]
+        print(f"Selected features: {all_selected_features}")
+        print(f"Shape of feature after feature selection:  {len(all_selected_features)}")
+        return X
     
     def fit_transform(self, X, y=None):
         """Fits all selectors and scaler and then transforms X."""
-        return self.fit(X, y).transform(X)
+        return self.fit(X, y).transform(X, y)
