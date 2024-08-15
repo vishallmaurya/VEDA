@@ -27,6 +27,7 @@ class OutlierHandlerTransformer(BaseEstimator, TransformerMixin):
         if not isinstance(handle, str):
             raise TypeError(f"'handle' should be a string, but got {type(handle).__name__}.")
 
+        # Validate skew_thresh and kurt_thresh
         if not isinstance(skew_thresh, (int, float)):
             raise ValueError("Parameter 'skew_thresh' should be a numerical value.")
         
@@ -37,8 +38,7 @@ class OutlierHandlerTransformer(BaseEstimator, TransformerMixin):
         if not isinstance(minlen, int) or minlen <= 0:
             raise ValueError("Parameter 'minlen' should be a positive integer.")
         
-        self._validate_params()
-
+        # Initialize attributes
         self.tests = tests
         self.method = method
         self.handle = handle
@@ -46,7 +46,8 @@ class OutlierHandlerTransformer(BaseEstimator, TransformerMixin):
         self.skew_thresh = skew_thresh
         self.kurt_thresh = kurt_thresh
 
-        # Validate the parameters using the internal validation function
+        # Now validate the parameters after they have been assigned
+        self._validate_params()
 
     def _validate_params(self):
         handle_list = ['capping', 'trimming', 'winsorization']
@@ -80,7 +81,7 @@ class OutlierHandlerTransformer(BaseEstimator, TransformerMixin):
 
         for col in data.columns:
             if data[col].dtype not in numerical_type:
-                raise ValueError(f"Invalid dtype in column '{col}'. Expected one of {numerical_type}.")
+                raise ValueError(f"Invalid dtype in column '{col}'. Expected one of {numerical_type}, having dtype of {data[col].dtype}")
 
         # Prepare to track outliers
         outlier_indices = []
