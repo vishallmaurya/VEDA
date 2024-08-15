@@ -348,13 +348,6 @@ class MultivariateImputer(BaseEstimator, TransformerMixin):
 
 class OneHotLabelEncoder(BaseEstimator, TransformerMixin):
     def __init__(self, label_encoding_type='default', min_category=5, columns=None, sparse=False):
-        """
-        Parameters:
-        - label_encoding_type: Type of encoding ('default', 'onehot', or 'labelencode').
-        - min_category: Minimum number of unique categories to switch from label encoding to one-hot encoding.
-        - columns: List of columns to encode. If None, automatically selects categorical columns.
-        - sparse: If True, return sparse matrix from one-hot encoding.
-        """
         if label_encoding_type not in ['default', 'onehot', 'labelencode']:
             raise ValueError("Invalid label_encoding_type. Expected 'default', 'onehot', or 'labelencode'.")
 
@@ -371,7 +364,6 @@ class OneHotLabelEncoder(BaseEstimator, TransformerMixin):
         self.min_category = min_category
         self.columns = columns
         self.sparse = sparse
-
 
     def fit(self, X, y=None):
         if not isinstance(X, pd.DataFrame):
@@ -390,21 +382,24 @@ class OneHotLabelEncoder(BaseEstimator, TransformerMixin):
 
         for col in self.columns:
             number_of_category = X[col].nunique()
+            print(f"Processing column: {col}, label_encoding_type:  {self.label_encoding_type},   Number of categories: {number_of_category}")
 
             if self.label_encoding_type == 'onehot' or (self.label_encoding_type == 'default' and number_of_category <= self.min_category):
-                onehotencoder = OneHotEncoder(sparse_output=self.sparse)
+                onehotencoder = OneHotEncoder(sparse_output=self.sparse, drop='first')
                 transformed_data = onehotencoder.fit_transform(X[[col]])
 
                 if self.sparse:
                     transformed_df = pd.DataFrame(transformed_data.toarray(), columns=onehotencoder.get_feature_names_out([col]), index=X.index)
                 else:
                     transformed_df = pd.DataFrame(transformed_data, columns=onehotencoder.get_feature_names_out([col]), index=X.index)
-
+                
+                print(f"Column: {col}, One-Hot Encoded Columns: {transformed_df.shape[1]} ,  and min_category :  {self.min_category}")
                 transformed_dfs.append(transformed_df)
 
             elif self.label_encoding_type == 'default' or self.label_encoding_type == 'labelencode':
                 labelencoder = LabelEncoder()
                 X[col] = labelencoder.fit_transform(X[col])
+                print(f"Column: {col}, Label Encoded")
 
             else:
                 raise ValueError("Invalid label_encoding_type. Expected 'onehot' or 'labelencode'.")
@@ -413,19 +408,19 @@ class OneHotLabelEncoder(BaseEstimator, TransformerMixin):
             transformed_df = pd.concat(transformed_dfs, axis=1)
             X = pd.concat([X.drop(columns=self.columns), transformed_df], axis=1)
 
+        print(f"Final number of columns after transformation: {X.shape[1]}")
         return X
 
-
     def fit_transform(self, X, y=None):
-        self.fit(X, y)
-        return self.transform(X, y)
+        return self.fit(X, y).transform(X, y)
+
         
 
 class DataPreprocessor(BaseEstimator, TransformerMixin):
     def __init__(self, keep='first', min_cat_percent=5.0, datalosspercent=10, 
                  min_var=0.04, var_diff=0.05, mod_diff=0.05, numerical_column=None,
                  categorical_column=None, temporal_column=None, temporal_type='interpolate', 
-                 n_neighbors=5, label_encoding_type='onehot', columns=None, sparse=False):
+                 n_neighbors=5, label_encoding_type='default', columns=None, sparse=False):
         
         self.keep = keep
         self.min_cat_percent = min_cat_percent
