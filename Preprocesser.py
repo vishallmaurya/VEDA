@@ -382,8 +382,7 @@ class OneHotLabelEncoder(BaseEstimator, TransformerMixin):
 
         for col in self.columns:
             number_of_category = X[col].nunique()
-            print(f"Processing column: {col}, label_encoding_type:  {self.label_encoding_type},   Number of categories: {number_of_category}")
-
+            
             if self.label_encoding_type == 'onehot' or (self.label_encoding_type == 'default' and number_of_category <= self.min_category):
                 onehotencoder = OneHotEncoder(sparse_output=self.sparse, drop='first')
                 transformed_data = onehotencoder.fit_transform(X[[col]])
@@ -393,22 +392,19 @@ class OneHotLabelEncoder(BaseEstimator, TransformerMixin):
                 else:
                     transformed_df = pd.DataFrame(transformed_data, columns=onehotencoder.get_feature_names_out([col]), index=X.index)
                 
-                print(f"Column: {col}, One-Hot Encoded Columns: {transformed_df.shape[1]} ,  and min_category :  {self.min_category}")
                 transformed_dfs.append(transformed_df)
 
             elif self.label_encoding_type == 'default' or self.label_encoding_type == 'labelencode':
                 labelencoder = LabelEncoder()
                 X[col] = labelencoder.fit_transform(X[col])
-                print(f"Column: {col}, Label Encoded")
 
             else:
-                raise ValueError("Invalid label_encoding_type. Expected 'onehot' or 'labelencode'.")
+                raise ValueError("Invalid label_encoding_type. Expected 'default' 'onehot' or 'labelencode'.")
 
         if transformed_dfs:
             transformed_df = pd.concat(transformed_dfs, axis=1)
             X = pd.concat([X.drop(columns=self.columns), transformed_df], axis=1)
 
-        print(f"Final number of columns after transformation: {X.shape[1]}")
         return X
 
     def fit_transform(self, X, y=None):
@@ -474,7 +470,6 @@ class DataPreprocessor(BaseEstimator, TransformerMixin):
             X_transformed = self.pipeline.transform(X)
             if y is not None:
                 y = y.iloc[X_transformed.index]
-                print("Data after processing:", X_transformed.shape, " and ", y.shape)
 
             return X_transformed, y
         except Exception as e:
