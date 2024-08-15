@@ -21,58 +21,53 @@ from catboost import CatBoostRegressor, CatBoostClassifier
 from sklearn.metrics import (balanced_accuracy_score as bas, 
                              confusion_matrix)
 
-df = pd.read_csv('data\online_course_engagement_data.csv')
+import Preprocesser as preprocess
+import OutlierHandler as outlierhandler
+import FeatureSelector as featureselector
+import DimensionReducer
+import BalanceData as balancedata
+import missing_value as mv
 
-X = df.drop(columns=['CourseCompletion'])
-y = df['CourseCompletion']
+df = pd.read_csv('data\\train1.csv')
+# df2 = pd.read_csv('data\\test1.csv')
+
+# df = pd.concat([df, df2], ignore_index=True)
+
+X = df.drop(['Loan Status'],axis=1)
+y = df['Loan Status']
 
 print("Initial shape:  ", X.shape, " and ", y.shape, " and ", type(y))
 
+# preprocess_obj = preprocess.DataPreprocessor()
+# X, y = preprocess_obj.fit_transform(X, y)
+
 X, y = mv.callingfunc(X, y)
-outlier, X, y = out.callingfun(X, y)
-X, y = fs.callingfunc(X, y)
-X, y = dr.callingfunc(X, y)
-X, y, strategy, model = bd.callingfunc(X, y)
+
+
+for col in X.columns:
+    if X[col].dtype == 'object' or X[col].dtype == 'category':
+        print(f"data of column {col} is :  {X[col].sample(2)}")
+    if col == 'Batch Enrolled':
+        print(f"data of column {col} is :  {X[col].sample(2)}")
+
+
+# out = outlierhandler.OutlierPreprocessor()
+# outlier, X, y  = out.fit_transform(X, y)
+
+# featuresel = featureselector.FeatureSelectionPipeline()
+# X, y = featuresel.fit_transform(X, y)
+
+# dimred = DimensionReducer.DimensionReducer()
+# X, y = dimred.fit_transform(X, y)
+
+# bdata = balancedata.AdaptiveBalancer()
+# X, y, strategy, model = bdata.fit_transform(X, y)
 
 print("Final shape:  ", X.shape, " and ", y.shape)
+print("Final shape:  ", X.isna().sum(), " and ", y.isna().sum())
 
-X_train, X_test, Y_train, Y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+new_df = X.copy()  # Make a copy of X to avoid any unwanted changes
+new_df['target'] = y.values 
+print(new_df.isna().sum())
 
-
-if(strategy == 'ensemble'):
-    model.fit(X_train, Y_train)
-
-    # Predict on the test data
-    y_pred = model.predict(X_test)
-
-    # Evaluate the model
-    accuracy = accuracy_score(Y_test, y_pred)
-    print(f"Accuracy: {accuracy}")
-
-    # Detailed classification report
-    print("Classification Report:")
-    print(classification_report(Y_test, y_pred))
-
-    # Confusion Matrix
-    print("Confusion Matrix:")
-    print(confusion_matrix(Y_test, y_pred))
-else:
-    log_reg = GradientBoostingClassifier(learning_rate=0.2, max_depth=5, min_samples_split=3, n_estimators=300, subsample=0.8)
-    log_reg.fit(X_train, Y_train)
-
-    # Predict on the test set
-    y_pred = log_reg.predict(X_test)
-
-    # Calculate accuracy, F1 score, recall
-    accuracy = accuracy_score(Y_test, y_pred)
-    f1 = f1_score(Y_test, y_pred)
-    recall = recall_score(Y_test, y_pred)
-    print(classification_report(Y_test, y_pred))
-    conf_matrix = confusion_matrix(Y_test, y_pred)
-
-    # Display the results
-    print(f'Accuracy: {accuracy:.4f}')
-    print(f'F1 Score: {f1:.4f}')
-    print(f'Recall: {recall:.4f}')
-    print('Confusion Matrix:')
-    print(conf_matrix)
+# new_df.to_csv('cleaned_data\\delloite.csv', index=False)
