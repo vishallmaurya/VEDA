@@ -10,7 +10,7 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.exceptions import NotFittedError
 
 
-class AdaptiveBalancerTransformer(BaseEstimator, TransformerMixin):
+class AdaptiveBalancer(BaseEstimator, TransformerMixin):
     def __init__(self, threshold=0.5, classification=None):
         if classification is None:
             raise ValueError("Parameter classification can't be empty")
