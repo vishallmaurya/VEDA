@@ -27,6 +27,7 @@ import FeatureSelector as featureselector
 import DimensionReducer
 import BalanceData as balancedata
 import missing_value as mv
+import feature_selection as fs
 
 df = pd.read_csv('data\\train1.csv')
 # df2 = pd.read_csv('data\\test1.csv')
@@ -38,24 +39,16 @@ y = df['Loan Status']
 
 print("Initial shape:  ", X.shape, " and ", y.shape, " and ", type(y))
 
-# preprocess_obj = preprocess.DataPreprocessor()
-# X, y = preprocess_obj.fit_transform(X, y)
-
-X, y = mv.callingfunc(X, y)
-
-
-for col in X.columns:
-    if X[col].dtype == 'object' or X[col].dtype == 'category':
-        print(f"data of column {col} is :  {X[col].sample(2)}")
-    if col == 'Batch Enrolled':
-        print(f"data of column {col} is :  {X[col].sample(2)}")
-
+preprocess_obj = preprocess.DataPreprocessor()
+X, y = preprocess_obj.fit_transform(X, y)
 
 # out = outlierhandler.OutlierPreprocessor()
 # outlier, X, y  = out.fit_transform(X, y)
 
-# featuresel = featureselector.FeatureSelectionPipeline()
-# X, y = featuresel.fit_transform(X, y)
+featuresel = featureselector.FeatureSelectionPipeline()
+X, y = featuresel.fit_transform(X, y)
+
+# X, y = fs.callingfunc(X, y)
 
 # dimred = DimensionReducer.DimensionReducer()
 # X, y = dimred.fit_transform(X, y)
