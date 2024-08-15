@@ -386,7 +386,7 @@ class AICBICFeatureSelector(BaseEstimator, TransformerMixin):
 
         X = np.array(X) if isinstance(X, pd.DataFrame) else X
 
-        return self.best_aic_features, self.best_bic_features
+        return self.best_aic_features_, self.best_bic_features_
     
     def fit_transform(self, X, y=None):
         """Fits the selector and then transforms the data."""
@@ -436,9 +436,18 @@ class FeatureSelectionPipeline(BaseEstimator, TransformerMixin):
         lasso_features = self.lasso_selector.transform(X_scaled)
         aic_bic_features = self.aic_bic_selector.transform(X)
         
+        print("dtype of correlation :  ", type(correlation_features))
+        print("dtype of mi_features :  ", type(mi_features))
+        print("dtype of lasso_features :  ", type(lasso_features))
+        print("dtype of aic_bic_features :  ", type(aic_bic_features))
+
+
         # Combine all selected features
-        all_selected_features = set(correlation_features) | set(mi_features) | set(lasso_features) | set(aic_bic_features)
-        
+        all_selected_features = list(set(correlation_features + 
+                                         [X.columns[i] for i in mi_features] + 
+                                         [X.columns[i] for i in lasso_features] + 
+                                         list(aic_bic_features)))
+
         X = X[all_selected_features]
         print(f"Selected features: {all_selected_features}")
         print(f"Shape of feature after feature selection:  {len(all_selected_features)}")
