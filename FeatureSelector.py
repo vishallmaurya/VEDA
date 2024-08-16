@@ -8,10 +8,8 @@ from sklearn.metrics import r2_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 import statsmodels.api as sm
-from concurrent.futures import ThreadPoolExecutor
 from sklearn.utils.multiclass import type_of_target
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.pipeline import Pipeline
 
 
 class Standardizer(BaseEstimator, TransformerMixin):
@@ -393,7 +391,7 @@ class AICBICFeatureSelector(BaseEstimator, TransformerMixin):
         return self.fit(X, y).transform(X)
     
 
-class FeatureSelectionPipeline(BaseEstimator, TransformerMixin):
+class FeatureSelection(BaseEstimator, TransformerMixin):
     def __init__(self, percentile=90, threshold=0.9, cv=5):
         self.percentile = percentile
         self.threshold = threshold
@@ -405,7 +403,7 @@ class FeatureSelectionPipeline(BaseEstimator, TransformerMixin):
         self.lasso_selector = LassoFeatureSelector(cv=cv)
         self.aic_bic_selector = AICBICFeatureSelector()
 
-    def fit(self, X, y):
+    def fit(self, X, y=None):
         """Fits all feature selection methods and the scaler."""
         if not isinstance(X, pd.DataFrame):
             raise TypeError("X must be a pandas DataFrame.")
@@ -452,5 +450,7 @@ class FeatureSelectionPipeline(BaseEstimator, TransformerMixin):
         return X, y
     
     def fit_transform(self, X, y=None):
+        print(f"From feature selector file :   type of X : {type(X)}, and type of y:   {type(y)}")
+
         """Fits all selectors and scaler and then transforms X."""
         return self.fit(X, y).transform(X, y)
