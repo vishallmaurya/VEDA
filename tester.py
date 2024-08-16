@@ -21,7 +21,7 @@ from catboost import CatBoostRegressor, CatBoostClassifier
 from sklearn.metrics import (balanced_accuracy_score as bas, 
                              confusion_matrix)
 
-import Preprocesser as preprocess
+import Preprocessor as preprocess
 import OutlierHandler as outlierhandler
 import FeatureSelector as featureselector
 import DimensionReducer
