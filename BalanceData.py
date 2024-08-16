@@ -120,17 +120,18 @@ class AdaptiveBalancer(BaseEstimator, TransformerMixin):
 
     def transform(self, X, y=None):
         if not self.classification:
-            return X, y, None, None
+            return X, y
 
         if y is None:
             raise ValueError("Target variable 'y' cannot be None when classification is set to True.")
         
         if self.strategy == "none":
-            return X, y, self.strategy, None
+            return X, y, self.strategy, self.model
+        print(self.strategy, " is used")
 
         if self.strategy in ["oversample", "combine"]:
             X_res, y_res = self.sampler.fit_resample(X, y)
-            return X_res, y_res, self.strategy, None
+            return X_res, y_res, self.strategy, self.model
         elif self.strategy == "anomaly":
             if self.model is None:
                 raise NotFittedError("The model has not been fitted yet. Please fit the model before transforming the data.")
