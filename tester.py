@@ -28,6 +28,7 @@ import DimensionReducer
 import BalanceData as balancedata
 import missing_value as mv
 import feature_selection as fs
+import Veda
 
 df = pd.read_csv('data\\train1.csv')
 # df2 = pd.read_csv('data\\test1.csv')
@@ -39,8 +40,11 @@ y = df['Loan Status']
 
 print("Initial shape:  ", X.shape, " and ", y.shape, " and ", type(y))
 
-preprocess_obj = preprocess.DataPreprocessor()
-X, y = preprocess_obj.fit_transform(X, y)
+obj = Veda.Veda(classification=True)
+X, y, outlier, strategy, model =  obj.fit_transform(X, y)
+print(strategy)
+# preprocess_obj = preprocess.DataPreprocessor()
+# X, y = preprocess_obj.fit_transform(X, y)
 
 # out = outlierhandler.OutlierPreprocessor()
 # outlier, X, y  = out.fit_transform(X, y)
@@ -52,14 +56,14 @@ X, y = preprocess_obj.fit_transform(X, y)
 # dimred = DimensionReducer.DimensionReducer()
 # X, y = dimred.fit_transform(X, y)
 
-bdata = balancedata.AdaptiveBalancer(classification=True)
-X, y, strategy, model = bdata.fit_transform(X, y)
+# bdata = balancedata.AdaptiveBalancer(classification=True)
+# X, y, strategy, model = bdata.fit_transform(X, y)
 
 print("Final shape:  ", X.shape, " and ", y.shape)
-print("Final shape:  ", X.isna().sum(), " and ", y.isna().sum())
 
 new_df = X.copy()  # Make a copy of X to avoid any unwanted changes
 new_df['target'] = y.values 
-print(new_df.isna().sum())
+
+new_df.to_csv('cleaned_data\\delloite1.csv', index=False)
 
 # new_df.to_csv('cleaned_data\\delloite.csv', index=False)
