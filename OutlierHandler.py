@@ -275,6 +275,7 @@ class OutlierPreprocessor:
     def __init__(self, outlier_handler=None):
         if outlier_handler is None:
             outlier_handler = OutlierHandlerTransformer()  # Default to a new instance if none provided
+        self.outliers = None
         self.pipeline = Pipeline(steps=[('outlier_handler', outlier_handler)])
 
     def fit(self, X, y=None):
@@ -288,25 +289,29 @@ class OutlierPreprocessor:
         except Exception as e:
             raise RuntimeError(f"An error occurred during fitting: {str(e)}")
 
+
     def transform(self, X, y=None):
         if not isinstance(X, pd.DataFrame):
             raise ValueError(f"Expected X to be a pandas DataFrame, got {type(X)} instead.")
         if y is not None and not isinstance(y, pd.Series):
             raise ValueError(f"Expected y to be a pandas Series, got {type(y)} instead.")
         try:
-            outliers, cleaned_X, cleaned_y = self.pipeline.named_steps['outlier_handler'].transform(X, y)
-            return outliers, cleaned_X, cleaned_y
+            self.outliers, cleaned_X, cleaned_y = self.pipeline.named_steps['outlier_handler'].transform(X, y)
+            return cleaned_X, cleaned_y, self.outliers
         except Exception as e:
             raise RuntimeError(f"An error occurred during transformation: {str(e)}")
 
+    
     def fit_transform(self, X, y=None):
+        print(f"From OUtliers file :   type of X : {type(X)}, and type of y:   {type(y)}")
+        print(f"size of X :  {X.shape} and size of y: {y.shape}")
         if not isinstance(X, pd.DataFrame):
             raise ValueError(f"Expected X to be a pandas DataFrame, got {type(X)} instead.")
         if y is not None and not isinstance(y, pd.Series):
             raise ValueError(f"Expected y to be a pandas Series, got {type(y)} instead.")
         try:
             self.pipeline.fit(X, y)
-            outliers, cleaned_X, cleaned_y = self.pipeline.named_steps['outlier_handler'].transform(X, y)
-            return outliers, cleaned_X, cleaned_y
+            self.outliers, cleaned_X, cleaned_y = self.pipeline.named_steps['outlier_handler'].transform(X, y)
+            return cleaned_X, cleaned_y, self.outliers
         except Exception as e:
             raise RuntimeError(f"An error occurred during fit_transform: {str(e)}")
