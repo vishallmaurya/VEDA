@@ -451,6 +451,9 @@ class DataPreprocessor(BaseEstimator, TransformerMixin):
         if not isinstance(X, pd.DataFrame) or not isinstance(y, pd.Series):
             raise ValueError("X must be a pandas DataFrame and y must be a pandas Series")
 
+        if(len(X) != len(y)):
+            raise RuntimeError("Size of X is not same as y")
+
         y.dropna(inplace=True)
         X = X.iloc[y.index].reset_index(drop=True)
         y = y.reset_index(drop=True)
@@ -471,11 +474,15 @@ class DataPreprocessor(BaseEstimator, TransformerMixin):
             if y is not None:
                 y = y.iloc[X_transformed.index]
 
+            print("From preprocessor file returning:  ", type(X), " and ", type(y))
+
             return X_transformed, y
         except Exception as e:
             raise RuntimeError(f"Error occurred during pipeline transformation: {str(e)}")
 
     def fit_transform(self, X, y=None):
+        print(f"From preprocessor file :   type of X : {type(X)}, and type of y:   {type(y)}")
+
         try:
             self.fit(X, y)
             return self.transform(X, y)
