@@ -45,16 +45,15 @@ X, y = preprocess_obj.fit_transform(X, y)
 # out = outlierhandler.OutlierPreprocessor()
 # outlier, X, y  = out.fit_transform(X, y)
 
-featuresel = featureselector.FeatureSelectionPipeline()
-X, y = featuresel.fit_transform(X, y)
+# featuresel = featureselector.FeatureSelectionPipeline()
+# X, y = featuresel.fit_transform(X, y)
 
-# X, y = fs.callingfunc(X, y)
 
 # dimred = DimensionReducer.DimensionReducer()
 # X, y = dimred.fit_transform(X, y)
 
-# bdata = balancedata.AdaptiveBalancer()
-# X, y, strategy, model = bdata.fit_transform(X, y)
+bdata = balancedata.AdaptiveBalancer(classification=True)
+X, y, strategy, model = bdata.fit_transform(X, y)
 
 print("Final shape:  ", X.shape, " and ", y.shape)
 print("Final shape:  ", X.isna().sum(), " and ", y.isna().sum())
