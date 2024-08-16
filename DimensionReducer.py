@@ -12,7 +12,6 @@ from tensorflow.python.keras.callbacks import EarlyStopping
 from sklearn.base import BaseEstimator, TransformerMixin
 
 import pandas as pd
-from sklearn.pipeline import Pipeline
 
 
 class Standardizer(BaseEstimator, TransformerMixin):
@@ -362,6 +361,8 @@ class DimensionReducer:
 
 
     def fit_transform(self, X, y=None):
+        print(f"From Dimension reducer file :   type of X : {type(X)}, and type of y:   {type(y)}")
+
         try:
             self.fit(X, y)
             return self.transform(X, y)
