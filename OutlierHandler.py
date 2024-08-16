@@ -107,7 +107,7 @@ class OutlierHandlerTransformer(BaseEstimator, TransformerMixin):
                 noise = sampled_data[labels == -1]
                 outlier_indices.extend(noise.index)
 
-        if not outlier_indices or len(non_multimodal_columns) > 0:
+        if not outlier_indices:
             # 2. Apply Isolation Forest
             if (self.method == 'default' and data.shape[0] >= 10000) or (self.method == 'isolation-forest'):
                 print("Isolation Forest is used for outlier detection.")
