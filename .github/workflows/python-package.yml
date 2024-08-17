@@ -1,3 +1,9 @@
+name: testing
+
+on: [push, pull_request]
+
+run-name: running tests for veda
+
 jobs:
   build-linux:
     runs-on: ubuntu-latest
