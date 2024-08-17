@@ -1,8 +1,9 @@
-import BalanceData
-import DimensionReducer
-import FeatureSelector
-import OutlierHandler
-import Preprocessor
+from .BalanceData import AdaptiveBalancer
+from .DimensionReducer import DimensionReducer
+from .FeatureSelector import FeatureSelection
+from .OutlierHandler import OutlierPreprocessor
+from .Preprocessor import DataPreprocessor
+
 import pandas as pd
 
 from sklearn.pipeline import Pipeline
@@ -12,11 +13,11 @@ class Veda(BaseEstimator, TransformerMixin):
     def __init__(self, classification=None):
         if classification is None:
             raise ValueError("Parameter classification can't be empty")
-        self.preprocess_data = Preprocessor.DataPreprocessor()
-        self.outlierhandler = OutlierHandler.OutlierPreprocessor()
-        self.feature_selection = FeatureSelector.FeatureSelection()
-        self.reduced_dim = DimensionReducer.DimensionReducer()
-        self.data_balancing = BalanceData.AdaptiveBalancer(classification=classification)
+        self.preprocess_data = DataPreprocessor()
+        self.outlierhandler = OutlierPreprocessor()
+        self.feature_selection = FeatureSelection()
+        self.reduced_dim = DimensionReducer()
+        self.data_balancing = AdaptiveBalancer(classification=classification)
         self.X = None
         self.y = None
         self.outliers = None

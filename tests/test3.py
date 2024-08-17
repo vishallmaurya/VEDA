@@ -1,14 +1,18 @@
-from VEDA import DimensionReducer
 import pytest
 import pandas as pd
+from sklearn.base import BaseEstimator
+import sys
+sys.path.insert(0, '../src')
+from VEDA import FeatureSelector
 
 def test():
-    df = pd.read_csv('src\\tests\sample_data\sample.csv')
+    df = pd.read_csv('tests\sample_data\sample.csv')
+
     X = df.drop(['price'], axis=1)
     y = df['price']
 
-    dim_reducer = DimensionReducer.DimensionReducer()
-    df, series = dim_reducer.fit_transform(X, y)
+    feature_selector = FeatureSelector.FeatureSelection()
+    df, series = feature_selector.fit_transform(X, y)
     
     # Assert the first output is a DataFrame
     assert isinstance(df, pd.DataFrame)

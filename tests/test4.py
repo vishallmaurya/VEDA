@@ -1,9 +1,13 @@
-from VEDA import OutlierHandler
 import pytest
 import pandas as pd
+from sklearn.base import BaseEstimator
+import sys
+sys.path.insert(0, '../src')
+from VEDA import OutlierHandler
 
 def test():
-    df = pd.read_csv('src\\tests\sample_data\sample.csv')
+    df = pd.read_csv('tests\sample_data\sample.csv')
+
     X = df.drop(['price'], axis=1)
     y = df['price']
 
