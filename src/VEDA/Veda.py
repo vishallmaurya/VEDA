@@ -1,8 +1,8 @@
-from .BalanceData import AdaptiveBalancer
-from .DimensionReducer import DimensionReducer
-from .FeatureSelector import FeatureSelection
-from .OutlierHandler import OutlierPreprocessor
-from .Preprocessor import DataPreprocessor
+from BalanceData import AdaptiveBalancer
+from DimensionReducer import DimensionReducer
+from FeatureSelector import FeatureSelection
+from OutlierHandler import OutlierPreprocessor
+from Preprocessor import DataPreprocessor
 
 import pandas as pd
 
