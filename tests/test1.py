@@ -2,30 +2,34 @@ import pytest
 import pandas as pd
 from sklearn.base import BaseEstimator
 import sys
-sys.path.insert(0, '../src')
+import os
+
+# Adjust PYTHONPATH
+sys.path.insert(0, 'src')
+
+# Import BalanceData from VEDA
 from VEDA import BalanceData
 
-
-def test():
-    df = pd.read_csv('tests\sample_data\sample.csv')
+def test_example():
+    # Use forward slashes for file paths
+    csv_path = os.path.join('tests', 'sample_data', 'sample.csv')
+    
+    # Load data
+    df = pd.read_csv(csv_path)
     X = df.drop(['price'], axis=1)
     y = df['price']
 
+    # Initialize the AdaptiveBalancer
     balancedata = BalanceData.AdaptiveBalancer(classification=False)
-    df, series,strategy, model = balancedata.fit_transform(X, y)
+    df, series, strategy, model = balancedata.fit_transform(X, y)
     
-    # Assert the first output is a DataFrame
+    # Assertions
     assert isinstance(df, pd.DataFrame)
-    
-    # Assert the second output is a Series
     assert isinstance(series, pd.Series)
-    
-    # Assert the third output is a string
     assert isinstance(strategy, str)
     
     check = ["oversample", "combine", "none"]
-        
-    if strategy not in check:  # Condition matching the example
+    if strategy not in check:
         assert isinstance(model, BaseEstimator)
     else:
         assert model is None

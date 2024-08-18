@@ -2,19 +2,27 @@ import pytest
 import pandas as pd
 from sklearn.base import BaseEstimator
 import sys
-sys.path.insert(0, '../src')
+import os
+
+# Adjust PYTHONPATH
+sys.path.insert(0, 'src')
+
+# Import DimensionReducer from VEDA
 from VEDA import DimensionReducer
 
 def test():
-    df = pd.read_csv('tests\sample_data\sample.csv')
+    # Use forward slashes for file paths
+    csv_path = os.path.join('tests', 'sample_data', 'sample.csv')
+    
+    # Load data
+    df = pd.read_csv(csv_path)
     X = df.drop(['price'], axis=1)
     y = df['price']
 
+    # Initialize the DimensionReducer
     dim_reducer = DimensionReducer.DimensionReducer()
-    df, series = dim_reducer.fit_transform(X, y)
+    df_transformed, series_transformed = dim_reducer.fit_transform(X, y)
     
-    # Assert the first output is a DataFrame
-    assert isinstance(df, pd.DataFrame)
-    
-    # Assert the second output is a Series
-    assert isinstance(series, pd.Series)
+    # Assertions
+    assert isinstance(df_transformed, pd.DataFrame)
+    assert isinstance(series_transformed, pd.Series)
