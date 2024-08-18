@@ -20,7 +20,7 @@ def test():
     y = df['price']
 
     # Initialize Veda
-    veda = Veda.Veda(classification=False)
+    veda = Veda.Veda(classification=True)
     df_transformed, series_transformed, outliers, strategy, model = veda.fit_transform(X, y)
     
     # Assertions
