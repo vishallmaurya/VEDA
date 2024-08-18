@@ -14,10 +14,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
+
       - name: Cache pip
         uses: actions/cache@v3
         with:
@@ -25,12 +27,16 @@ jobs:
           key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
+
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
+          pip install pytest
+
       - name: Run tests
-        working-directory: tests
-        run: pytest
+        run: |
+          if [ -d "tests" ]; then cd tests; fi
+          python -m pytest
 
   build-windows:
     runs-on: windows-latest
@@ -41,10 +47,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
+
       - name: Cache pip
         uses: actions/cache@v3
         with:
@@ -52,9 +60,13 @@ jobs:
           key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
+
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
+          pip install pytest
+
       - name: Run tests
-        working-directory: tests
-        run: pytest
+        run: |
+          if (Test-Path -Path "tests") { cd tests }
+          python -m pytest
