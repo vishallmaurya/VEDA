@@ -36,7 +36,7 @@ jobs:
       - name: Run tests
         run: |
           export PYTHONPATH=src
-          python -m pytest --maxfail=5 --disable-warnings -v
+          pytest tests
 
   build-windows:
     runs-on: windows-latest
@@ -68,5 +68,5 @@ jobs:
 
       - name: Run tests
         run: |
-          $env:PYTHONPATH="src"
-          python -m pytest --maxfail=5 --disable-warnings -v
+          $env:PYTHONPATH = "src"
+          pytest tests
