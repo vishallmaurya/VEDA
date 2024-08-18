@@ -20,7 +20,6 @@ setup(
   classifiers=[
       "Programming Language :: Python :: 3.10",
       "Programming Language :: Python :: 3.11",
-      "Programming Language :: Python :: 3.12",
       "License :: OSI Approved :: Apache Software License",
       "Operating System :: OS Independent",
   ],
@@ -29,7 +28,7 @@ setup(
   project_urls={
       "Bug Tracker": "https://github.com/vishallmaurya/VEDA/issues",
   },
-  python_requires=">=3.6",
+  python_requires=">=3.8",
   install_requires=[
       "numpy>=1.21.0",
       "pandas>=1.3.0",
