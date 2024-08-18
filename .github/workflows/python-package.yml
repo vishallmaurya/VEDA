@@ -35,8 +35,8 @@ jobs:
 
       - name: Run tests
         run: |
-          if [ -d "tests" ]; then cd tests; fi
-          python -m pytest
+          export PYTHONPATH=src
+          python -m pytest --maxfail=5 --disable-warnings -v
 
   build-windows:
     runs-on: windows-latest
@@ -68,5 +68,5 @@ jobs:
 
       - name: Run tests
         run: |
-          if (Test-Path -Path "tests") { cd tests }
-          python -m pytest
+          $env:PYTHONPATH="src"
+          python -m pytest --maxfail=5 --disable-warnings -v
