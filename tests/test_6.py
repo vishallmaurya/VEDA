@@ -15,9 +15,9 @@ def test():
     csv_path = os.path.join('tests', 'sample_data', 'sample.csv')
     
     # Load data
-    df = pd.read_csv(csv_path, encoding='ISO-8859-1')
-    X = df.drop(['price'], axis=1)
-    y = df['price']
+    df = pd.read_csv(csv_path)
+    X = df.drop(['TenYearCHD'], axis=1)
+    y = df['TenYearCHD']
 
     # Initialize Veda
     veda = Veda.Veda(classification=True)
