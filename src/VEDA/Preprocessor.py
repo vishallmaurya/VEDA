@@ -74,7 +74,7 @@ class MakeCategoryColumns(BaseEstimator, TransformerMixin):
                     count = X[col].nunique()
                     percent_count = (count / X[col].shape[0]) * 100
                     if percent_count <= self.min_cat_percent:
-                        X[col] = X[col].astype('object')
+                        X[col] = X[col].astype(str)
             return X
         except Exception as e:
             raise RuntimeError(f"An error occurred during transformation: {str(e)}")
