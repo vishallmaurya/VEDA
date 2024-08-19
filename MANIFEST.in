@@ -4,4 +4,4 @@ include LICENSE
 include NOTICE
 
 # Include all files in the src directory that aren't automatically included
-recursive-include src/VEDA *.py
+recursive-include src/veda_lib *.py
