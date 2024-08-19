@@ -8,7 +8,7 @@ import os
 sys.path.insert(0, 'src')
 
 # Import Veda from VEDA
-from VEDA import Veda
+from veda_lib import Veda
 
 def test():
     # Use forward slashes for file paths
