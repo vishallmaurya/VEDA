@@ -49,8 +49,13 @@ jobs:
 
       - name: Run tests
         run: |
-          if [ $RUNNER_OS = "Windows" ]; then $env:PYTHONPATH = "src"; else export PYTHONPATH=src; fi
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            PYTHONPATH="src"
+          else
+            export PYTHONPATH=src
+          fi
           pytest tests
+        shell: bash
 
   # Publishing job to PyPI
   publish:
@@ -78,5 +83,4 @@ jobs:
       - name: Publish distribution to PyPI
         uses: pypa/gh-action-pypi-publish@master
         with:
-          user: __token__
-          password: ${{ secrets.PYPI_API_TOKEN }}
+          password: ${{ secrets.VEDA_SECRET }}
