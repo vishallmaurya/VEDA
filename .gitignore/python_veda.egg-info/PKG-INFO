@@ -1,18 +1,19 @@
 Metadata-Version: 2.1
-Name: DataVEDA
-Version: 0.0.1
-Summary: A Python library for automated preprocessing and cleaning of data
+Name: python-veda
+Version: 0.0.2
+Summary: python-veda is a Python library designed to streamline the data preprocessing and cleaning workflow for machine learning projects. It offers a comprehensive set of tools to handle common data preparation tasks
 Home-page: https://github.com/vishallmaurya/VEDA
 Author: Vishal Maurya
 Author-email: vishallmaurya210@gmail.com
 License: Apache License 2.0
 Project-URL: Bug Tracker, https://github.com/vishallmaurya/VEDA/issues
-Keywords: automated efficient data cleaning,automated efficient preprocessing,python library,veda
+Keywords: Automated Data Preprocessing,Data Cleaning,Data Balancing,Machine Learning,Data Transformation,Feature Engineering,Data Wrangling,Data Preparation
+Classifier: Programming Language :: Python :: 3.9
 Classifier: Programming Language :: Python :: 3.10
 Classifier: Programming Language :: Python :: 3.11
 Classifier: License :: OSI Approved :: Apache Software License
 Classifier: Operating System :: OS Independent
-Requires-Python: >=3.8
+Requires-Python: >=3.9
 Description-Content-Type: text/markdown
 Provides-Extra: dev
 License-File: LICENSE
