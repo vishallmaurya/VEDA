@@ -8,7 +8,7 @@ with open(os.path.join(base_dir, "README.md")) as f:
 
 setup(
   name="VEDA",
-  version="0.1.0",
+  version="0.0.1",
   author="Vishal Maurya",
   author_email="vishallmaurya210@gmail.com",
   description="A Python library for automated preprocessing and cleaning of data",
