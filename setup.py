@@ -16,7 +16,7 @@ setup(
   long_description_content_type="text/markdown",
   url="https://github.com/vishallmaurya/VEDA",
   license="Apache License 2.0",
-  packages=find_packages(),
+  packages=find_packages(where='src'),
   classifiers=[
       "Programming Language :: Python :: 3.9",
       "Programming Language :: Python :: 3.10",
