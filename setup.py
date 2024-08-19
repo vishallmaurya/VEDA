@@ -8,27 +8,28 @@ with open(os.path.join(base_dir, "README.md")) as f:
 
 setup(
   name="DataVEDA",
-  version="0.0.1",
+  version="0.0.2",
   author="Vishal Maurya",
   author_email="vishallmaurya210@gmail.com",
-  description="A Python library for automated preprocessing and cleaning of data",
+  description="DataVEDA is a Python library designed to streamline the data preprocessing and cleaning workflow for machine learning projects. It offers a comprehensive set of tools to handle common data preparation tasks",
   long_description=long_description,
   long_description_content_type="text/markdown",
   url="https://github.com/vishallmaurya/VEDA",
   license="Apache License 2.0",
   packages=find_packages(),
   classifiers=[
+      "Programming Language :: Python :: 3.9"
       "Programming Language :: Python :: 3.10",
       "Programming Language :: Python :: 3.11",
       "License :: OSI Approved :: Apache Software License",
       "Operating System :: OS Independent",
   ],
-  keywords=["automated efficient data cleaning", "automated efficient preprocessing",
-            "python library", "veda"],
+  keywords=["Automated Data Preprocessing", "Data Cleaning", "Data Balancing", "Machine Learning", 
+            "Data Transformation", "Feature Engineering", "Data Wrangling", "Data Preparation"], 
   project_urls={
       "Bug Tracker": "https://github.com/vishallmaurya/VEDA/issues",
   },
-  python_requires=">=3.8",
+  python_requires=">=3.9",
   install_requires=[
       "numpy>=1.21.0",
       "pandas>=1.3.0",
