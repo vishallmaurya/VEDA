@@ -7,11 +7,11 @@ with open(os.path.join(base_dir, "README.md")) as f:
     long_description = f.read()
 
 setup(
-  name="py_veda",
+  name="veda_lib",
   version="0.0.2",
   author="Vishal Maurya",
   author_email="vishallmaurya210@gmail.com",
-  description="py_veda is a Python library designed to streamline the data preprocessing and cleaning workflow for machine learning projects. It offers a comprehensive set of tools to handle common data preparation tasks",
+  description="veda_lib is a Python library designed to streamline the data preprocessing and cleaning workflow for machine learning projects. It offers a comprehensive set of tools to handle common data preparation tasks",
   long_description=long_description,
   long_description_content_type="text/markdown",
   url="https://github.com/vishallmaurya/VEDA",
