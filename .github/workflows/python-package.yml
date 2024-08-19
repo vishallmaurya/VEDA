@@ -6,6 +6,8 @@ on:
       - main
   pull_request:
   workflow_dispatch:
+  release:
+    types: [published] # Trigger on published release
 
 jobs:
   # Testing job for both Linux and Windows
@@ -62,7 +64,7 @@ jobs:
     name: Build and publish Python distribution
     runs-on: ubuntu-latest
     needs: test
-    if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch'
+    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch' || github.event_name == 'release' # Ensure it runs on push to main, manual trigger, or release
     
     steps:
       - uses: actions/checkout@v3
