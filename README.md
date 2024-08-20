@@ -116,3 +116,16 @@ from veda_lib import BalanceData
 balancer = BalanceData.AdaptiveBalancer(classification=True)
 X, y, strategy, model = balancer.fit_transform(X, y)
 ```
+
+**************************************************************** 
+
+## Contributing
+
+I welcome contributions to `veda_lib`! If you have a bug report, feature suggestion, or want to contribute code, please open an issue or pull request on GitHub.
+
+*************************************************************
+
+## License
+
+`veda_lib` is licensed under the Apache License Version 2.0. See the [LICENSE](https://github.com/vishallmaurya/VEDA?tab=Apache-2.0-1-ov-file) file for more details.
+
