@@ -3,6 +3,8 @@
 **A Python library designed to streamline the transition from raw data to machine learning models.**  
 veda_lib automates and simplifies data preprocessing, cleaning, and balancing, addressing the time-consuming and complex aspects of these tasks to provide clean, ready-to-use data for your models.
 
+********************************************************
+
 ## Installation
 
 First, install `veda_lib` using pip:
@@ -52,3 +54,10 @@ After installing `veda_lib`, import it into your project and start utilizing its
    - Integrates all the above functionalities into a single pipeline
 - Usage: Pass your raw data through this module to perform comprehensive EDA and get fully preprocessed, cleaned, and balanced data ready for model training.
 
+*******************************************************
+
+## Importing
+
+```bash
+from veda_lib import Veda
+```
