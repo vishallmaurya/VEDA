@@ -58,6 +58,79 @@ After installing `veda_lib`, import it into your project and start utilizing its
 
 ## Importing
 
+1. 
 ```bash
 from veda_lib import Veda
+```
+
+Here is an example of importing Veda from veda_lib.Veda, here set classification to True if the problem is classification otherwise set to False.
+
+```bash
+eda = Veda.Veda(classification=True)
+eda.fit_transform(X, Y)
+```
+
+
+2. 
+```bash
+from veda_lib import Preprocessor
+```
+
+Here is an example of importing DataPreprocessor from veda_lib.Preprocessor, using default values of parameters
+
+```bash
+preprocessor = Preprocessor.DataPreprocessor()
+X, y = preprocessor.fit_transform(X, Y)
+```
+
+3. 
+```bash
+from veda_lib import OutlierHandler
+```
+
+Here is an example of importing OutlierPreprocessor from veda_lib.OutlierHandler, using default values of parameters.
+
+```bash
+outlier_preprocessor = OutlierHandler.OutlierPreprocessor()
+X, y = outlier_preprocessor.fit_transform(X, Y)
+```
+
+
+4. 
+```bash
+from veda_lib import FeatureSelector
+```
+
+Here is an example of importing FeatureSelection from veda_lib.FeatureSelector, using default values of parameters.
+
+```bash
+selector = FeatureSelector.FeatureSelection()
+X, y = selector.fit_transform(X, y)
+```
+
+
+5. 
+```bash
+from veda_lib import DimensionReducer
+```
+
+Here is an example of importing DimensionReducer from veda_lib.DimensionReducer, using default values of parameters.
+
+```bash
+reducer = DimensionReducer.DimensionReducer()
+X, y = reducer.fit_transform(X, y)
+```
+
+
+
+6. 
+```bash
+from veda_lib import BalanceData
+```
+
+Here is an example of importing AdaptiveBalancer from veda_lib.BalanceData, using default values of parameters.
+
+```bash
+balancer = BalanceData.AdaptiveBalancer(classification=True)
+X, y, strategy, model = balancer.fit_transform(X, y)
 ```
