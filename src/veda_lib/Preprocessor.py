@@ -320,7 +320,6 @@ class MultivariateImputer(BaseEstimator, TransformerMixin):
     category_types = ['object', 'category', 'string', 'interval', 'bool']
     null_category_columns = [col for col in X.columns if (X[col].isnull().sum() > 0) and (X[col].dtype in category_types)]
 
-    pd.set_option('future.no_silent_downcasting', True)
     X.replace([np.inf, -np.inf], np.nan, inplace=True)
 
     # Impute numeric columns using KNNImputer
