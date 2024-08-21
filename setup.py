@@ -26,7 +26,8 @@ setup(
       "Operating System :: OS Independent",
   ],
   keywords=["Automated Data Preprocessing", "Data Cleaning", "Data Balancing", "Machine Learning", 
-            "Data Transformation", "Feature Engineering", "Data Wrangling", "Data Preparation"], 
+            "Data Transformation", "Feature Engineering", "Data Wrangling", "Data Preparation",
+            "Exploratory Data Analysis"], 
   project_urls={
       "Bug Tracker": "https://github.com/vishallmaurya/VEDA/issues",
   },
