@@ -467,12 +467,8 @@ class FeatureSelection(BaseEstimator, TransformerMixin):
                                          bic_features))
 
         X = X[all_selected_features]
-        print(f"Selected features: {all_selected_features}")
-        print(f"Shape of feature after feature selection:  {len(all_selected_features)}")
         return X, y
     
     def fit_transform(self, X, y=None):
-        print(f"From feature selector file :   type of X : {type(X)}, and type of y:   {type(y)}")
-
         """Fits all selectors and scaler and then transforms X."""
         return self.fit(X, y).transform(X, y)

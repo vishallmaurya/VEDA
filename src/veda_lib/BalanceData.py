@@ -133,7 +133,7 @@ class AdaptiveBalancer(BaseEstimator, TransformerMixin):
         self._select_balancing_strategy(X, y)
         
         if self.strategy == "none":
-            print("Data is already balanced or within the acceptable threshold.")
+            self.model = None
         elif self.strategy == "anomaly":
             self.model = self.sampler.fit(X)
         elif self.strategy == "ensemble":
@@ -150,7 +150,6 @@ class AdaptiveBalancer(BaseEstimator, TransformerMixin):
         
         if self.strategy == "none":
             return X, y, self.strategy, None
-        print(self.strategy, " is used")
 
         if self.strategy in ["oversample", "combine"]:
             X_res, y_res = self.sampler.fit_resample(X, y)

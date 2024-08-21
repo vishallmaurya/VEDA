@@ -496,15 +496,11 @@ class DataPreprocessor(BaseEstimator, TransformerMixin):
             if y is not None:
                 y = y.iloc[X_transformed.index]
 
-            print("From preprocessor file returning:  ", type(X), " and ", type(y))
-
             return X_transformed, y
         except Exception as e:
             raise RuntimeError(f"Error occurred during pipeline transformation: {str(e)}")
 
     def fit_transform(self, X, y=None):
-        print(f"From preprocessor file :   type of X : {type(X)}, and type of y:   {type(y)}")
-
         try:
             self.fit(X, y)
             return self.transform(X, y)

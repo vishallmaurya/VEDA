@@ -120,7 +120,6 @@ class OutlierHandlerTransformer(BaseEstimator, TransformerMixin):
         non_multimodal_columns = [col for col in data.columns if col not in multimodal_columns]
 
         if multimodal_columns:
-            print(f"Multimodal distribution detected in columns: {multimodal_columns}")
             for column in multimodal_columns:
                 sampled_data = self._stratified_sample(data, column, n_samples=int(0.15 * len(data)), n_splits=5)
                 dbscan = DBSCAN()
@@ -131,7 +130,6 @@ class OutlierHandlerTransformer(BaseEstimator, TransformerMixin):
         if not outlier_indices:
             # 2. Apply Isolation Forest
             if (self.method == 'default' and data.shape[0] >= 10000) or (self.method == 'isolation-forest'):
-                print("Isolation Forest is used for outlier detection.")
                 iso_forest = self._tune_isolation_forest_params_with_optuna(data)
                 outlier = iso_forest.fit_predict(data)
                 outlier_indices.extend(data.index[outlier == -1])
@@ -152,14 +150,12 @@ class OutlierHandlerTransformer(BaseEstimator, TransformerMixin):
                 use_lof = (dist_variance > variance_threshold) and (dip_p_value < dip_p_value_threshold)
 
                 if use_lof or self.method == 'lof':
-                    print("Local Outlier Factor (LOF) is used for outlier detection.")
                     lof = LocalOutlierFactor(n_neighbors=k)
                     y_pred = lof.fit_predict(data)
                     outlier_indices.extend(data.index[y_pred == -1])
 
             # 4. Apply the normal distribution method
             if not outlier_indices and self.method == 'default':
-                print("Default method for outlier detection.")
                 for column in data.columns:
                     if self._is_normal_distribution(data[column]):
                         mean = data[column].mean()
@@ -323,8 +319,6 @@ class OutlierPreprocessor:
 
     
     def fit_transform(self, X, y=None):
-        print(f"From OUtliers file :   type of X : {type(X)}, and type of y:   {type(y)}")
-        print(f"size of X :  {X.shape} and size of y: {y.shape}")
         if not isinstance(X, pd.DataFrame):
             raise ValueError(f"Expected X to be a pandas DataFrame, got {type(X)} instead.")
         if y is not None and not isinstance(y, pd.Series):

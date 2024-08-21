@@ -56,10 +56,8 @@ class Veda(BaseEstimator, TransformerMixin):
         self.X, self.y, self.outliers = self.outlierhandler.fit_transform(self.X, self.y)
         self.X, self.y = self.feature_selection.fit_transform(self.X, self.y)
         self.X, self.y = self.reduced_dim.fit_transform(self.X, self.y)
-        print("size before balancing:  ", self.X.shape, " and  ", self.y.shape )
         self.X, self.y, self.strategy, self.model = self.data_balancing.fit_transform(self.X, self.y)
-        print("size after balancing:  ", self.X.shape, " and  ", self.y.shape )
-
+        
         return self
         
     def transform(self, X, y=None):
