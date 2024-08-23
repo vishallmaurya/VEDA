@@ -41,6 +41,7 @@ import pandas as pd
 class Standardizer(BaseEstimator, TransformerMixin):
     def __init__(self):
         self.scaler = StandardScaler()
+        self.numerical = None
     
     def fit(self, X, y=None):
         try:
@@ -50,7 +51,15 @@ class Standardizer(BaseEstimator, TransformerMixin):
             if X.isnull().values.any():
                 raise ValueError("Input data X contains NaN values, which cannot be handled by StandardScaler.")
 
-            self.scaler.fit(X)
+            numerical_columns = []
+
+            for column in X.columns:
+                if pd.api.types.is_numeric_dtype(X[column]):
+                    numerical_columns.append(column)
+            self.numerical = numerical_columns
+
+            if len(self.numerical) > 0:
+                self.scaler.fit(X[self.numerical])
         except (TypeError, ValueError) as e:
             raise RuntimeError(f"Failed to fit StandardScaler due to invalid input data: {e}")
         except Exception as e:
@@ -65,8 +74,11 @@ class Standardizer(BaseEstimator, TransformerMixin):
             if X.isnull().values.any():
                 raise ValueError("Input data X contains NaN values, which cannot be handled by StandardScaler.")
             
-            X_scaled = self.scaler.transform(X)
-            return pd.DataFrame(X_scaled, columns=X.columns)
+            if len(self.numerical) > 0:
+                X_scaled = X.copy()
+                X_scaled[self.numerical] = self.scaler.transform(X[self.numerical])
+                return X_scaled
+            return X
         except (TypeError, ValueError) as e:
             raise RuntimeError(f"Failed to transform data with StandardScaler due to invalid input data: {e}")
         except Exception as e:

@@ -37,57 +37,55 @@ from sklearn.base import BaseEstimator, TransformerMixin
 class Standardizer(BaseEstimator, TransformerMixin):
     def __init__(self):
         self.scaler = StandardScaler()
-
+        self.numerical = None
+    
     def fit(self, X, y=None):
-        """Fits the scaler to the data."""
-        # Check if X is a DataFrame or a 2D numpy array
-        if not isinstance(X, (pd.DataFrame, np.ndarray)):
-            raise TypeError("X must be a pandas DataFrame or a 2D numpy ndarray.")
-        
-        # Ensure X is not empty
-        if X.shape[0] == 0 or X.shape[1] == 0:
-            raise ValueError("X must have at least one sample and one feature.")
-        
-        # Check for NaN or infinite values
-        if np.any(np.isnan(X)):
-            raise ValueError("X contains NaN values, which cannot be processed.")
-        if np.any(np.isinf(X)):
-            raise ValueError("X contains infinite values, which cannot be processed.")
-        
-        self.scaler.fit(X)
-        return self
-
-    def transform(self, X, y=None):
-        """Transforms the data by scaling features to zero mean and unit variance."""
-        # Reuse the validation logic from fit
-        self._validate_X(X)
-        
         try:
-            X_scaled = self.scaler.transform(X)
+            if not isinstance(X, (pd.DataFrame, np.ndarray)):
+                raise TypeError("Input data X should be a pandas DataFrame or numpy array.")
+            
+            if X.isnull().values.any():
+                raise ValueError("Input data X contains NaN values, which cannot be handled by StandardScaler.")
+
+            numerical_columns = []
+
+            for column in X.columns:
+                if pd.api.types.is_numeric_dtype(X[column]):
+                    numerical_columns.append(column)
+            self.numerical = numerical_columns
+
+            if len(self.numerical) > 0:
+                self.scaler.fit(X[self.numerical])
+        except (TypeError, ValueError) as e:
+            raise RuntimeError(f"Failed to fit StandardScaler due to invalid input data: {e}")
         except Exception as e:
-            raise RuntimeError(f"An error occurred during transformation: {e}")
-        
-        return pd.DataFrame(X_scaled, columns=X.columns if isinstance(X, pd.DataFrame) else None)
+            raise RuntimeError(f"An unexpected error occurred while fitting StandardScaler: {e}")
+        return self
+    
+    def transform(self, X):
+        try:
+            if not isinstance(X, (pd.DataFrame, np.ndarray)):
+                raise TypeError("Input data X should be a pandas DataFrame or numpy array.")
+            
+            if X.isnull().values.any():
+                raise ValueError("Input data X contains NaN values, which cannot be handled by StandardScaler.")
+            
+            if len(self.numerical) > 0:
+                X_scaled = X.copy()
+                X_scaled[self.numerical] = self.scaler.transform(X[self.numerical])
+                return X_scaled
+            return X
+        except (TypeError, ValueError) as e:
+            raise RuntimeError(f"Failed to transform data with StandardScaler due to invalid input data: {e}")
+        except Exception as e:
+            raise RuntimeError(f"An unexpected error occurred while transforming data with StandardScaler: {e}")
 
     def fit_transform(self, X, y=None):
-        """Fits the scaler and transforms the data in one step."""
-        return self.fit(X, y).transform(X, y)
-    
-    def _validate_X(self, X):
-        """Internal method to validate the input X."""
-        # Check if X is a DataFrame or a 2D numpy array
-        if not isinstance(X, (pd.DataFrame, np.ndarray)):
-            raise TypeError("X must be a pandas DataFrame or a 2D numpy ndarray.")
-        
-        # Ensure X is not empty
-        if X.shape[0] == 0 or X.shape[1] == 0:
-            raise ValueError("X must have at least one sample and one feature.")
-        
-        # Check for NaN or infinite values
-        if np.any(np.isnan(X)):
-            raise ValueError("X contains NaN values, which cannot be processed.")
-        if np.any(np.isinf(X)):
-            raise ValueError("X contains infinite values, which cannot be processed.")
+        try:
+            self.fit(X, y)
+            return self.transform(X)
+        except Exception as e:
+            raise RuntimeError(f"An error occurred during fit_transform: {e}")
         
 
 
