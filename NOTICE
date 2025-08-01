@@ -1,9 +1,6 @@
-
-Here's a NOTICE file tailored to your project, acknowledging the third-party libraries you mentioned:
-
 NOTICE
 
-This product includes software developed by Vishal Maurya and other contributors.
+This product includes software developed by Vishal Maurya.
 
 Portions of this product are based on work by other projects or contributors, including:
 
@@ -36,5 +33,3 @@ Licensed under the MIT License.
 
 diptest - Developed by Martin Maechler
 Licensed under the GPL-2 License.
-
-For a full list of third-party libraries and their licenses, see the LICENSE file.
