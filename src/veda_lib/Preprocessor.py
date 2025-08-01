@@ -23,7 +23,6 @@
 
 import pandas as pd
 import numpy as np
-from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import SimpleImputer, KNNImputer, IterativeImputer
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder, LabelEncoder
@@ -109,14 +108,17 @@ class MakeCategoryColumns(BaseEstimator, TransformerMixin):
 
  
 class DropRowColumnTransformer(BaseEstimator, TransformerMixin):
-    def __init__(self, datalosspercent=10, min_var=0.4):
+    def __init__(self, datalosspercent=10, min_var=0.4, min_col_threshold=0.65):
         if not (0 <= datalosspercent <= 100):
             raise ValueError("datalosspercent should be between 0 and 100.")
         if not (0 <= min_var <= 1):
             raise ValueError("min_var should be between 0 and 1.")
+        if not (0 <= min_col_threshold <= 1):
+            raise ValueError("min_col_threshold should be between 0 and 1.")
         
         self.datalosspercent = datalosspercent
         self.min_var = min_var
+        self.min_col_threshold = min_col_threshold
 
     def fit(self, X, y=None):
         if not isinstance(X, pd.DataFrame):
@@ -130,6 +132,8 @@ class DropRowColumnTransformer(BaseEstimator, TransformerMixin):
             raise ValueError(f"Expected a pandas DataFrame, but got {type(X).__name__}.")
 
         self._validate_dataframe(X)
+        illegal_values = ["?", "NA", "n/a", "null", "None", "inf", "-inf"]
+        X = X.replace(illegal_values, np.nan)
         null_count = X.isnull().sum().values.sum()
         
         for col in X.columns:
@@ -139,18 +143,27 @@ class DropRowColumnTransformer(BaseEstimator, TransformerMixin):
         if null_count == 0:
             return X
         
+        # calculating the columns that have null values less than the threshold, as we can delete the rows then
+        new_df = X.copy()
+
         limited_null_columns = [var for var in X.columns if X[var].isnull().mean() <= self.min_var]
         
         if len(limited_null_columns) == 0:
             return X
 
-        new_df = X[limited_null_columns].dropna()
-        excessive_null_columns = [var for var in X.columns if X[var].isnull().mean() > self.min_var]
-        new_df[excessive_null_columns] = X[excessive_null_columns]
+        new_df.dropna(subset=limited_null_columns, inplace=True)  # drops rows based on specific columns
+
+        # calculating the columns that have null values more than the threshold
+        excessive_null_columns = [var for var in new_df.columns if new_df[var].isnull().mean() > self.min_col_threshold]        
+        new_df.drop(excessive_null_columns, axis=1, inplace=True)
+
+        total_cells_before = X.shape[0] * X.shape[1]
+        total_cells_after = new_df.shape[0] * new_df.shape[1]
+
+        total_loss_percent = ((total_cells_before - total_cells_after) / total_cells_before) * 100
+
         
-        change = ((X.shape[0] - new_df.shape[0]) / X.shape[0]) * 100
-        
-        if change > self.datalosspercent:
+        if total_loss_percent > self.datalosspercent:
             return X
         else:
             return new_df
@@ -205,6 +218,10 @@ class ImputeRowColumn(BaseEstimator, TransformerMixin):
         for col in X.columns:
             if X[col].dtype not in dtype_list:
                 raise ValueError(f"Invalid dtype in column '{col}'. Supported dtypes: {dtype_list}")
+
+        # Replace illegal values with np.nan
+        illegal_values = ["?", "NA", "n/a", "null", "None", "inf", "-inf"]
+        X = X.replace(illegal_values, np.nan)
 
         null_count = X.isnull().sum().values.sum()
         if null_count == 0:
@@ -320,7 +337,9 @@ class MultivariateImputer(BaseEstimator, TransformerMixin):
     category_types = ['object', 'category', 'string', 'interval', 'bool']
     null_category_columns = [col for col in X.columns if (X[col].isnull().sum() > 0) and (X[col].dtype in category_types)]
 
-    X.replace([np.inf, -np.inf], np.nan, inplace=True)
+    # Replace illegal values with np.nan
+    illegal_values = ["?", "NA", "n/a", "null", "None", "inf", "-inf"]
+    X = X.replace(illegal_values, np.nan)
 
     # Impute numeric columns using KNNImputer
     if len(null_numeric_columns) > 0:
@@ -436,7 +455,7 @@ class OneHotLabelEncoder(BaseEstimator, TransformerMixin):
 
 class DataPreprocessor(BaseEstimator, TransformerMixin):
     def __init__(self, keep='first', min_cat_percent=5.0, datalosspercent=10, 
-                 min_var=0.04, var_diff=0.05, mod_diff=0.05, numerical_column=None,
+                 min_var=0.04, min_col_threshold=0.65, var_diff=0.05, mod_diff=0.05, numerical_column=None,
                  categorical_column=None, temporal_column=None, temporal_type='interpolate', 
                  n_neighbors=5, label_encoding_type='default', columns=None, sparse=False):
         
@@ -444,6 +463,7 @@ class DataPreprocessor(BaseEstimator, TransformerMixin):
         self.min_cat_percent = min_cat_percent
         self.datalosspercent = datalosspercent
         self.min_var = min_var
+        self.min_col_threshold = min_col_threshold
         self.var_diff = var_diff
         self.mod_diff = mod_diff
         self.numerical_column = numerical_column or []
@@ -459,7 +479,7 @@ class DataPreprocessor(BaseEstimator, TransformerMixin):
         self.pipeline = Pipeline([
             ('delete_duplicates', DeleteDuplicates(keep=self.keep)),
             ('create_category', MakeCategoryColumns(min_cat_percent=self.min_cat_percent)),
-            ('drop_null', DropRowColumnTransformer(datalosspercent=self.datalosspercent, min_var=self.min_var)),
+            ('drop_null', DropRowColumnTransformer(datalosspercent=self.datalosspercent, min_var=self.min_var, min_col_threshold=self.min_col_threshold)),
             ('univariate_imputation', ImputeRowColumn(numerical_column=self.numerical_column,
                                                       categorical_column=self.categorical_column,
                                                       temporal_column=self.temporal_column,

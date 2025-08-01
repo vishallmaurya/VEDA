@@ -34,6 +34,7 @@ from sklearn.exceptions import NotFittedError
 
 
 class AdaptiveBalancer(BaseEstimator, TransformerMixin):
+    # here threshold means the class division..number of samples for the classes..
     def __init__(self, threshold=0.5, classification=None):
         if classification is None:
             raise ValueError("Parameter classification can't be empty")
@@ -45,6 +46,8 @@ class AdaptiveBalancer(BaseEstimator, TransformerMixin):
         self.sampler = None
         self.model = None
 
+    # higher the iqr -> higher is the imbalance data
+    # low threshold means high the imbalance
     def _calculate_dynamic_threshold(self, y):
         try:
             class_ratios = np.array(list(Counter(y).values())) / len(y)

@@ -144,7 +144,6 @@ class PCATransformer(BaseEstimator, TransformerMixin):
             raise RuntimeError(f"An error occurred during fit_transform: {e}")
         
 
-
 class UMAPTransformer(BaseEstimator, TransformerMixin):
     def __init__(self, prioritize_reproducibility=True, min_neighbors=5, max_neighbors=50, n_components=None):
         self.prioritize_reproducibility = prioritize_reproducibility
@@ -238,7 +237,7 @@ class AutoencoderTransformer(BaseEstimator, TransformerMixin):
         try:
             if n_samples < 5000:
                 return self.min_epochs
-            elif n_samples < 10000:
+            elif n_samples < 10000: # use interpolation to smoothly increase the batch size..
                 return int(self.min_epochs + (self.max_epochs - self.min_epochs) * (n_samples - 5000) / 5000)
             else:
                 return self.max_epochs
@@ -249,7 +248,7 @@ class AutoencoderTransformer(BaseEstimator, TransformerMixin):
         try:
             if n_samples < 5000:
                 return self.min_batch_size
-            elif n_samples < 20000:
+            elif n_samples < 20000: # use interpolation to smoothly increase the batch size..
                 return int(self.min_batch_size + (self.max_batch_size - self.min_batch_size) * (n_samples - 5000) / 15000)
             else:
                 return self.max_batch_size
