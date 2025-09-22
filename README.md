@@ -68,6 +68,7 @@ After installing `veda_lib`, import it into your project and start utilizing its
    - **label_encoding_type** *(str, default=`'onehot'`)*  
    Encoding strategy for categorical features. Options: `['onehot', 'labelencode']`.
 
+*******************************************************
 
 **2. OutlierHandler Module**
 - Functions:
