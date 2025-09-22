@@ -28,21 +28,45 @@ After installing `veda_lib`, import it into your project and start utilizing its
 - Usage: Ideal for initial data cleaning and preprocessing steps.
 
 - Parameters:
-| Parameter            | Type      | Default         | Description                                                                 |
-|----------------------|-----------|-----------------|-----------------------------------------------------------------------------|
-| `keep`               | str/bool  | `'first'`       | How to keep duplicates: `['first', 'last', False]`.                         |
-| `min_cat_percent`    | int       | `5`             | Convert column into categorical if % of unique values < threshold.          |
-| `datalosspercent`    | int       | `10`            | Maximum acceptable % of data loss during cleaning.                          |
-| `min_var`            | float     | `0.04`          | Row deletion threshold. Columns with missing proportion > `min_var` ignored.|
-| `min_col_threshold`  | float     | `0.65`          | Column deletion threshold. Drop columns with missing > threshold.           |
-| `var_diff`           | float     | `0.05`          | Maximum allowable variance change (numerical imputation).                   |
-| `mod_diff`           | float     | `0.05`          | Threshold for mode dominance (categorical imputation).                      |
-| `numerical_column`   | list/None | `None`          | List of numerical column names (if not auto-detected).                      |
-| `categorical_column` | list/None | `None`          | List of categorical column names (if not auto-detected).                    |
-| `temporal_column`    | list/None | `None`          | List of temporal column names (if any).                                     |
-| `temporal_type`      | str       | `'interpolate'` | Strategy for temporal imputation: `['bfill', 'ffill', 'interpolate']`. |
-| `n_neighbors`        | int       | `5`             | Number of neighbors for multivariate imputation (KNN-based).                |
-| `label_encoding_type`| str       | `'onehot'`      | Encoding strategy for categorical features: `['onehot', 'labelencode']`.    |
+
+   - **keep** *(str/bool, default=`'first'`)*  
+   How to keep duplicates. Options: `['first', 'last', False]`.
+
+   - **min_cat_percent** *(int, default=`5`)*  
+   Convert column into categorical if % of unique values < threshold.
+
+   - **datalosspercent** *(int, default=`10`)*  
+   Maximum acceptable % of data loss during cleaning.
+
+   - **min_var** *(float, default=`0.04`)*  
+   Row deletion threshold. Columns with missing proportion > `min_var` are ignored.
+
+   - **min_col_threshold** *(float, default=`0.65`)*  
+   Column deletion threshold. Drop columns with missing proportion > threshold.
+
+   - **var_diff** *(float, default=`0.05`)*  
+   Maximum allowable variance change (numerical imputation).
+
+   - **mod_diff** *(float, default=`0.05`)*  
+   Threshold for mode dominance (categorical imputation).
+
+   - **numerical_column** *(list/None, default=`None`)*  
+   List of numerical column names (if not auto-detected).
+
+   - **categorical_column** *(list/None, default=`None`)*  
+   List of categorical column names (if not auto-detected).
+
+   - **temporal_column** *(list/None, default=`None`)*  
+   List of temporal column names (if any).
+
+   - **temporal_type** *(str, default=`'interpolate'`)*  
+   Strategy for temporal imputation. Options: `['bfill', 'ffill', 'interpolate']`.
+
+   - **n_neighbors** *(int, default=`5`)*  
+   Number of neighbors for multivariate imputation (KNN-based).
+
+   - **label_encoding_type** *(str, default=`'onehot'`)*  
+   Encoding strategy for categorical features. Options: `['onehot', 'labelencode']`.
 
 
 **2. OutlierHandler Module**
