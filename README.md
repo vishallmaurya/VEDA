@@ -20,11 +20,30 @@ pip install veda_lib
 After installing `veda_lib`, import it into your project and start utilizing its modules to prepare your data. Below is a summary of the key functionalities provided by each module:
 
 **1. Preprocessor Module**
+
 - Functions:
    - Removing null values
    - Handling duplicates
    - Imputing missing values with appropriate methods
 - Usage: Ideal for initial data cleaning and preprocessing steps.
+
+- Parameters:
+| Parameter            | Type      | Default         | Description                                                                 |
+|----------------------|-----------|-----------------|-----------------------------------------------------------------------------|
+| `keep`               | str/bool  | `'first'`       | How to keep duplicates: `['first', 'last', False]`.                         |
+| `min_cat_percent`    | int       | `5`             | Convert column into categorical if % of unique values < threshold.          |
+| `datalosspercent`    | int       | `10`            | Maximum acceptable % of data loss during cleaning.                          |
+| `min_var`            | float     | `0.04`          | Row deletion threshold. Columns with missing proportion > `min_var` ignored.|
+| `min_col_threshold`  | float     | `0.65`          | Column deletion threshold. Drop columns with missing > threshold.           |
+| `var_diff`           | float     | `0.05`          | Maximum allowable variance change (numerical imputation).                   |
+| `mod_diff`           | float     | `0.05`          | Threshold for mode dominance (categorical imputation).                      |
+| `numerical_column`   | list/None | `None`          | List of numerical column names (if not auto-detected).                      |
+| `categorical_column` | list/None | `None`          | List of categorical column names (if not auto-detected).                    |
+| `temporal_column`    | list/None | `None`          | List of temporal column names (if any).                                     |
+| `temporal_type`      | str       | `'interpolate'` | Strategy for temporal imputation: `['bfill', 'ffill', 'interpolate']`. |
+| `n_neighbors`        | int       | `5`             | Number of neighbors for multivariate imputation (KNN-based).                |
+| `label_encoding_type`| str       | `'onehot'`      | Encoding strategy for categorical features: `['onehot', 'labelencode']`.    |
+
 
 **2. OutlierHandler Module**
 - Functions:
@@ -64,7 +83,7 @@ from veda_lib import Veda
 ```
 ```bash
 eda = Veda.Veda(classification=True)
-eda.fit_transform(X, Y)
+X, y, outliers, strategy, model = eda.fit_transform(X, y)
 ```
 
 
@@ -74,7 +93,7 @@ from veda_lib import Preprocessor
 ```
 ```bash
 preprocessor = Preprocessor.DataPreprocessor()
-X, y = preprocessor.fit_transform(X, Y)
+X, y = preprocessor.fit_transform(X, y)
 ```
 
 
@@ -84,7 +103,7 @@ from veda_lib import OutlierHandler
 ```
 ```bash
 outlier_preprocessor = OutlierHandler.OutlierPreprocessor()
-X, y = outlier_preprocessor.fit_transform(X, Y)
+X, y = outlier_preprocessor.fit_transform(X, y)
 ```
 
 
