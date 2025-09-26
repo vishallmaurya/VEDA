@@ -76,6 +76,37 @@ After installing `veda_lib`, import it into your project and start utilizing its
    - Customizable based on the nature of your data
 - Usage: Useful for managing data skewness and ensuring robust model performance.
 
+- Parameters:
+
+   - **tests** *(list, default=`['skew-kurtosis']`)*
+   Test to check whether the data is having normal distribution or not. Options: 
+      - *shapiro: Tests the null hypothesis that the data was drawn from a normal distribution.*
+      - *skew-kurtosis: skewness measures asymmetry in the data, normal distribution has skewness app. 0 and kurtosis measures "peakedness", normal distribution has kurtosis app.*
+      - *kstest: Compares the sample distribution with a theoretical normal distribution*
+      - *Anderson: Checks how well data fits a normal distribution, focusing more on the tails*
+      - *jarque-bera: Checks if skewness and kurtosis match those of a normal distribution.*
+   
+   - **method** *(str, default=`'default'`)*
+   Outliers detection stratedy. Options:
+      - *default: Adaptive pipeline (Dip Test + DBSCAN | Isolation Forest | LOF | Normal Rule)*
+      - *isolation forest: Always uses isolation forest*
+      - *lof: Always uses local outlier factor*
+
+   - **handle** *(str, default=`'capping'`)*
+   Strategy for handling detected outliers. Options:
+      - *capping: Replace values beyond 3*var limits with boundary values*
+      - *trimming: Drop rows with outliers.*
+      - *winsorization: Clip values at limits.*
+
+   - **minlen** *(int, defualt=`5000`)*
+   Minimum dataset size above which Shapiro test is applied.
+   
+   - **skew_thresh** *(int, default=`1`)*
+   Absolute skewness threshold. Values greater than this indicate non-normal distribution.
+
+   **kurt_thresh** *(int, default=`1`)*
+   Absolute deviation from kurtosis=3 (normal distribution). Values greater than this indicate non-normal distribution.
+
 **3. FeatureSelector Module**
 - Functions:
    - Selecting important features from the dataset

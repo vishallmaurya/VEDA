@@ -289,8 +289,8 @@ class OutlierHandlerTransformer(BaseEstimator, TransformerMixin):
 
 
 class OutlierPreprocessor:
-    def __init__(self):
-        outlier_handler = OutlierHandlerTransformer()  # Default to a new instance if none provided
+    def __init__(self, tests=['skew-kurtosis'], method='default', handle='capping', minlen=5000, skew_thresh=1, kurt_thresh=1):
+        outlier_handler = OutlierHandlerTransformer(tests, method, handle, minlen, skew_thresh, kurt_thresh)  
         self.outliers = None
         self.pipeline = Pipeline(steps=[('outlier_handler', outlier_handler)])
 
