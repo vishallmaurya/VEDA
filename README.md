@@ -146,8 +146,8 @@ After installing `veda_lib`, import it into your project and start utilizing its
    - **threshold** *(float, 0.5)*
    Minimum acceptable ratio of minority to majority class. If the imbalance ratio is greater than or equal to this threshold, no resampling is performed.
 
-   - **classification** *(bool, True)*
-   Whether the task is classification or not. 
+   - **classification** *(bool, None)*
+   Whether the task is classification or not. Options: `[True, False]`
 
 *******************************************************
 
@@ -155,6 +155,11 @@ After installing `veda_lib`, import it into your project and start utilizing its
 - Functions:
    - Integrates all the above functionalities into a single pipeline
 - Usage: Pass your raw data through this module to perform comprehensive EDA and get fully preprocessed, cleaned, and balanced data ready for model training.
+
+- Parameters:
+
+   - **classification** *(bool, None)*
+   Whether the task is classification or not. Options: `[True, False]`
 
 *******************************************************
 
