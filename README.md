@@ -133,11 +133,23 @@ After installing `veda_lib`, import it into your project and start utilizing its
    - Reducing data dimensionality using appropriate techniques
 - Usage: Crucial for addressing the curse of dimensionality and improving model efficiency.
 
+*******************************************************
+
 **5. BalanceData Module**
 - Functions:
    - Balancing class distribution in imbalanced datasets
    - Methods chosen based on data characteristics
 - Usage: Essential for improving model fairness and performance on imbalanced datasets.
+
+- Parameters: 
+
+   - **threshold** *(float, 0.5)*
+   Minimum acceptable ratio of minority to majority class. If the imbalance ratio is greater than or equal to this threshold, no resampling is performed.
+
+   - **classification** *(bool, True)*
+   Whether the task is classification or not. 
+
+*******************************************************
 
 **6. Veda Module**
 - Functions:
