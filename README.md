@@ -32,10 +32,10 @@ After installing `veda_lib`, import it into your project and start utilizing its
    - **keep** *(str/bool, default=`'first'`)*  
    How to keep duplicates. Options: `['first', 'last', False]`.
 
-   - **min_cat_percent** *(int, default=`5`)*  
+   - **min_cat_percent** *(float, default=`5`)*  
    Convert column into categorical if % of unique values < threshold.
 
-   - **datalosspercent** *(int, default=`10`)*  
+   - **datalosspercent** *(float, default=`10`)*  
    Maximum acceptable % of data loss during cleaning.
 
    - **min_var** *(float, default=`0.04`)*  
@@ -101,17 +101,32 @@ After installing `veda_lib`, import it into your project and start utilizing its
    - **minlen** *(int, defualt=`5000`)*
    Minimum dataset size above which Shapiro test is applied.
    
-   - **skew_thresh** *(int, default=`1`)*
+   - **skew_thresh** *(float, default=`1`)*
    Absolute skewness threshold. Values greater than this indicate non-normal distribution.
 
-   - **kurt_thresh** *(int, default=`1`)*
+   - **kurt_thresh** *(float, default=`1`)*
    Absolute deviation from kurtosis=3 (normal distribution). Values greater than this indicate non-normal distribution.
+
+*******************************************************
 
 **3. FeatureSelector Module**
 - Functions:
    - Selecting important features from the dataset
    - Tailored selection based on the nature of the data
 - Usage: Helps in reducing dimensionality and focusing on the most impactful features.
+
+- Parameters:
+
+   - **percentile** *(float, default=`90`)*
+   Percentile threshold (0–100) for selecting features most correlated with the target variable. Higher values select fewer features with stronger correlations.
+   
+   - **threshold** *(float, default=`0.9`)*
+   Cumulative mutual information threshold (0–1) that determines the optimal number of features to select. A higher threshold selects more features.
+
+   - **cv** *(int, default=`5`)*
+   Number of cross-validation folds for selecting the best Lasso regularization strength (alpha). Must be a positive integer.
+
+*******************************************************
 
 **4. DimensionReducer Module**
 - Functions:
