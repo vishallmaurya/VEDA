@@ -104,7 +104,7 @@ After installing `veda_lib`, import it into your project and start utilizing its
    - **skew_thresh** *(int, default=`1`)*
    Absolute skewness threshold. Values greater than this indicate non-normal distribution.
 
-   **kurt_thresh** *(int, default=`1`)*
+   - **kurt_thresh** *(int, default=`1`)*
    Absolute deviation from kurtosis=3 (normal distribution). Values greater than this indicate non-normal distribution.
 
 **3. FeatureSelector Module**
