@@ -214,6 +214,7 @@ from veda_lib import Veda
 eda = Veda.Veda(classification=True)
 X, y, outliers, strategy, model = eda.fit_transform(X, y)
 ```
+- 
    - Returns:
       - X - Transformed feature set after preprocessing and balancing.
       - y - Transformed target variable.
