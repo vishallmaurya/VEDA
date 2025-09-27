@@ -214,7 +214,12 @@ from veda_lib import Veda
 eda = Veda.Veda(classification=True)
 X, y, outliers, strategy, model = eda.fit_transform(X, y)
 ```
-
+   - Returns:
+      - X - Transformed feature set after preprocessing and balancing.
+      - y - Transformed target variable.
+      - outliers - detected outliers from the data
+      - strategy - Automatically selected balancing strategy ("none", "oversample", "combine", "anomaly", "ensemble").
+      - model - The fitted balancing model/sampler (e.g., SMOTE, IsolationForest, RandomForestClassifier), or None if not applicable.
 
 - Here is an example of importing DataPreprocessor from veda_lib.Preprocessor, using default values of parameters
 ```bash
