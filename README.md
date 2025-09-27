@@ -214,11 +214,10 @@ from veda_lib import Veda
 eda = Veda.Veda(classification=True)
 X, y, outliers, strategy, model = eda.fit_transform(X, y)
 ```
-- 
    - Returns:
-      - X - Transformed feature set after preprocessing and balancing.
+      - X - Transformed feature set after complete processing.
       - y - Transformed target variable.
-      - outliers - detected outliers from the data
+      - outliers - detected outliers from the data.
       - strategy - Automatically selected balancing strategy ("none", "oversample", "combine", "anomaly", "ensemble").
       - model - The fitted balancing model/sampler (e.g., SMOTE, IsolationForest, RandomForestClassifier), or None if not applicable.
 
@@ -230,7 +229,9 @@ from veda_lib import Preprocessor
 preprocessor = Preprocessor.DataPreprocessor()
 X, y = preprocessor.fit_transform(X, y)
 ```
-
+   - Returns:
+      - X - Transformed feature set after preprocessing.
+      - y - Transformed target variable.
 
 - Here is an example of importing OutlierPreprocessor from veda_lib.OutlierHandler, using default values of parameters.
 ```bash
@@ -238,9 +239,12 @@ from veda_lib import OutlierHandler
 ```
 ```bash
 outlier_preprocessor = OutlierHandler.OutlierPreprocessor()
-X, y = outlier_preprocessor.fit_transform(X, y)
+X, y, outliers = outlier_preprocessor.fit_transform(X, y)
 ```
-
+   - Returns:
+      - X - Transformed feature set after handling outliers.
+      - y - Transformed target variable.
+      - outliers - detected outliers from the data.
 
 - Here is an example of importing FeatureSelection from veda_lib.FeatureSelector, using default values of parameters.
 ```bash
@@ -250,7 +254,9 @@ from veda_lib import FeatureSelector
 selector = FeatureSelector.FeatureSelection()
 X, y = selector.fit_transform(X, y)
 ```
-
+   - Returns:
+      - X - Transformed features set after feature selection.
+      - y - Transformed target variable.
 
 - Here is an example of importing DimensionReducer from veda_lib.DimensionReducer, using default values of parameters.
 ```bash
@@ -260,7 +266,9 @@ from veda_lib import DimensionReducer
 reducer = DimensionReducer.DimensionReducer()
 X, y = reducer.fit_transform(X, y)
 ```
-
+   - Returns:
+      - X - Transformed features set after reducing dimensions.
+      - y - Transformed target variables.
 
 - Here is an example of importing AdaptiveBalancer from veda_lib.BalanceData, using default values of parameters.
 ```bash
@@ -270,6 +278,12 @@ from veda_lib import BalanceData
 balancer = BalanceData.AdaptiveBalancer(classification=True)
 X, y, strategy, model = balancer.fit_transform(X, y)
 ```
+   - Returns:
+      - X - Transformed features set after balancing it.
+      - y - Transformed target variables.
+      - strategy -
+      - strategy - Automatically selected balancing strategy ("none", "oversample", "combine", "anomaly", "ensemble").
+      - model - The fitted balancing model/sampler (e.g., SMOTE, IsolationForest, RandomForestClassifier), or None if not applicable.
 
 **************************************************************** 
 
