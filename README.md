@@ -133,6 +133,47 @@ After installing `veda_lib`, import it into your project and start utilizing its
    - Reducing data dimensionality using appropriate techniques
 - Usage: Crucial for addressing the curse of dimensionality and improving model efficiency.
 
+- Parameters:
+
+   - **variance_threshold** *(float, default=`0.95`)*
+   Fraction of variance to preserve during PCA/autoencoder training.
+
+   - **prioritize_reproducibility** *(bool, default=`True`)*
+   Ensures deterministic results by fixing random seeds.
+
+   - **min_neighbors** *(int, default=`5`)*
+   Minimum number of neighbors to controls local structure preservation.
+
+   - **max_neighbors** *(int, default=`50`)*
+   Maximum number of neighbors to prevents over-smoothing of high-dimensional manifolds.
+   
+   - **min_dim** *(int, default=`10`)*
+   Minimum encoding dimension for Autoencoders.
+
+   - **max_dim** *(int, default=`100`)*
+   Maximum encoding dimension for Autoencoders.
+
+   - **hidden_layers** *(int, default=`1`)*
+   Number of hidden layers in Autoencoder.
+
+   - **optimizer** *(str, default=`adam`)*
+   Optimizer used for training Autoencoders.
+
+   - **loss** *(str, default=`mean_squared_error`)*
+   Loss function for Autoencoder reconstruction.
+
+   - **min_epochs** *(int, default=`20`)*
+   Minimum number of epochs for Autoencoder training.
+
+   - **max_epochs** *(int, default=`100`)*
+   Maximum epochs allowed for training Autoencoders.
+
+   - **min_batch_size** *(int, default=`32`)*
+   Smallest batch size for Autoencoder training.
+
+   - **max_batch_size** *(int, default=`256`)*
+   Largest batch size allowed for Autoencoder training.
+
 *******************************************************
 
 **5. BalanceData Module**

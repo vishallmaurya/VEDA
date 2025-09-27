@@ -301,7 +301,7 @@ class AutoencoderTransformer(BaseEstimator, TransformerMixin):
 
 
 
-class DimensionReducer:
+class DimensionReducer(BaseEstimator, TransformerMixin):
     def __init__(self,  variance_threshold=0.95,
                  prioritize_reproducibility=True, min_neighbors=5, max_neighbors=50,
                  min_dim=10, max_dim=100, 
