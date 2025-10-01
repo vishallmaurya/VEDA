@@ -48,6 +48,15 @@ class AdaptiveBalancer(BaseEstimator, TransformerMixin):
 
     # higher the iqr -> higher is the imbalance data
     # low threshold means high the imbalance
+
+    # Suppose we have 3 classes: [1000, 800, 200] samples
+    # Class ratios: [0.5, 0.4, 0.1]
+    # Q1 = 0.25, Q3 = 0.45, Median = 0.4
+    # IQR = 0.45 - 0.25 = 0.2
+    # Dynamic threshold = 0.4 - (0.2/2) = 0.3
+
+    # This means: "Classes with less than 30% representation need balancing"
+
     def _calculate_dynamic_threshold(self, y):
         try:
             class_ratios = np.array(list(Counter(y).values())) / len(y)
@@ -56,6 +65,9 @@ class AdaptiveBalancer(BaseEstimator, TransformerMixin):
             return max(0.1, dynamic_threshold)
         except Exception as e:
             raise RuntimeError("Error calculating dynamic threshold.") from e
+
+    # Balanced: [500, 500] → Entropy ≈ 1.0 (maximum for 2 classes)
+    # Imbalanced: [900, 100] → Entropy ≈ 0.47 (lower)
 
     def _calculate_entropy(self, y):
         try:
@@ -108,12 +120,14 @@ class AdaptiveBalancer(BaseEstimator, TransformerMixin):
                 self.strategy = "none"
                 self.sampler = None
             elif density_ratio < 0.5:
+                # SMOTE (entropy ≤ 0.5): For highly imbalanced data, create smooth interpolations
+                # SMOTEN (entropy > 0.5): For nominal/categorical features, better handling of discrete values
                 self.strategy = "oversample"
                 self.sampler = SMOTEN() if entropy_value > 0.5 else SMOTE()
-            elif len(X) < small_size:
+            elif len(X) < 5000:
                 self.strategy = "oversample"
                 self.sampler = ADASYN() if imbalance_ratio > 0.2 else SMOTE()
-            elif len(X) > large_size:
+            elif len(X) > 5000 and len(X) < 10000:
                 self.strategy = "combine"
                 self.sampler = SMOTEENN() if imbalance_ratio > imbalance_threshold else SMOTETomek()
             elif imbalance_ratio < imbalance_threshold:

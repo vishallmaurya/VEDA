@@ -32,7 +32,10 @@ from sklearn.metrics import f1_score
 import optuna
 from diptest import diptest
 import warnings
-from sklearn.pipeline import Pipeline,make_pipeline
+from sklearn.pipeline import Pipeline
+
+warnings.simplefilter("ignore")
+
 
 class OutlierHandlerTransformer(BaseEstimator, TransformerMixin):
     def __init__(self, tests=['skew-kurtosis'], method='default', handle='capping', minlen=5000, skew_thresh=1, kurt_thresh=1):
@@ -109,15 +112,11 @@ class OutlierHandlerTransformer(BaseEstimator, TransformerMixin):
 
         # 1. Check for multimodal columns using Dip Test
         multimodal_columns = []
-        non_multimodal_columns = []
 
         for column in data.columns:
-            warnings.simplefilter("ignore")
             dip_stat, dip_p_value = diptest(data[column])
             if dip_p_value < 0.05:
                 multimodal_columns.append(column)
-
-        non_multimodal_columns = [col for col in data.columns if col not in multimodal_columns]
 
         if multimodal_columns:
             for column in multimodal_columns:
@@ -156,6 +155,8 @@ class OutlierHandlerTransformer(BaseEstimator, TransformerMixin):
 
             # 4. Apply the normal distribution method
             if not outlier_indices and self.method == 'default':
+                trimming_outlier_indices = set()
+
                 for column in data.columns:
                     if self._is_normal_distribution(data[column]):
                         mean = data[column].mean()
@@ -169,10 +170,16 @@ class OutlierHandlerTransformer(BaseEstimator, TransformerMixin):
                             data[column] = np.where(data[column] > upper_limit, upper_limit,
                                                     np.where(data[column] < lower_limit, lower_limit, data[column]))
                         elif self.handle == 'trimming':
-                            data = data[~outliers]
-                            y = y[~outliers]
+                            trimming_outlier_indices.update(outlier_indices)
                         elif self.handle == 'winsorization':
-                            data[column] = data[column].clip(lower=lower_limit, upper=upper_limit)
+                            lower_percentile = np.percentile(data[column], 5)   
+                            upper_percentile = np.percentile(data[column], 95) 
+                            data[column] = np.clip(data[column], lower_percentile, upper_percentile)
+                
+                if self.handle == 'trimming' and trimming_outlier_indices:
+                    data = data.drop(trimming_outlier_indices)
+                    if y is not None:
+                        y = y.drop(trimming_outlier_indices)
 
         # Remove duplicate indices and keep only valid indices
         outlier_indices = list(set(outlier_indices))
